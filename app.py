@@ -12,9 +12,13 @@ load_dotenv()
 
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"pdf"}
-CHUNK_SIZE = 500        
-CHUNK_OVERLAP = 50      
-TOP_K = 5               
+CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE", 500))
+CHUNK_OVERLAP = int(os.environ.get("CHUNK_OVERLAP", 50))
+TOP_K = int(os.environ.get("TOP_K", 5))
+LLM_MODEL = os.environ.get("LLM_MODEL", "llama-3.1-8b-instant")
+EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", 0.3))
+LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", 1024))
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -23,11 +27,19 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 chroma_client = chromadb.Client()
-embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-    model_name="all-MiniLM-L6-v2"
-)
-
+embedding_fn = None
 indexed_collections: dict[str, chromadb.Collection] = {}
+
+
+def get_embedding_fn():
+    global embedding_fn
+    if embedding_fn is None:
+        print("Loading embedding model...")
+        embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
+            model_name=EMBEDDING_MODEL
+        )
+        print("Embedding model loaded.")
+    return embedding_fn
 
 
 def allowed_file(filename: str) -> bool:
@@ -70,7 +82,7 @@ def index_pdf(filename: str, pdf_path: str) -> chromadb.Collection:
 
     collection = chroma_client.create_collection(
         name=collection_name,
-        embedding_function=embedding_fn,
+        embedding_function=get_embedding_fn(),
     )
 
     text = extract_text_from_pdf(pdf_path)
@@ -114,13 +126,13 @@ def ask_llm(context: str, question: str) -> str:
     )
 
     chat_completion = groq_client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model=LLM_MODEL,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        temperature=0.3,
-        max_tokens=1024,
+        temperature=LLM_TEMPERATURE,
+        max_tokens=LLM_MAX_TOKENS,
     )
     return chat_completion.choices[0].message.content
 
@@ -180,4 +192,4 @@ def chat():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

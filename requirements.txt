@@ -1,4 +1,5 @@
 flask
+gunicorn
 groq
 chromadb
 sentence-transformers

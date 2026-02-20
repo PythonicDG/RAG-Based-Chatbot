@@ -144,25 +144,32 @@ def index():
 
 @app.route("/upload", methods=["POST"])
 def upload_pdf():
-    if "file" not in request.files:
-        return jsonify({"error": "No file part"}), 400
+    try:
+        if "file" not in request.files:
+            return jsonify({"error": "No file part"}), 400
 
-    file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"error": "No selected file"}), 400
+        file = request.files["file"]
+        if file.filename == "":
+            return jsonify({"error": "No selected file"}), 400
 
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        file.save(filepath)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            file.save(filepath)
 
-        collection = index_pdf(filename, filepath)
-        indexed_collections[filename] = collection
-        chunk_count = collection.count()
+            collection = index_pdf(filename, filepath)
+            indexed_collections[filename] = collection
+            chunk_count = collection.count()
 
-        return render_template("chat.html", filename=filename, chunk_count=chunk_count)
+            return render_template("chat.html", filename=filename, chunk_count=chunk_count)
 
-    return jsonify({"error": "Invalid file type. Only PDF files are allowed."}), 400
+        return jsonify({"error": "Invalid file type. Only PDF files are allowed."}), 400
+
+    except Exception as e:
+        print(f"Upload error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"Failed to process PDF: {str(e)}"}), 500
 
 
 @app.route("/chat", methods=["POST"])

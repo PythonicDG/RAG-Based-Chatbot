@@ -1,7 +1,9 @@
-flask
-gunicorn
+fastapi
+uvicorn[standard]
+python-multipart
 groq
 chromadb==0.5.23
 sentence-transformers
 PyPDF2
 python-dotenv
+jinja2

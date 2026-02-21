@@ -1,9 +1,13 @@
 import os
 import re
-import sys
 import threading
-from flask import Flask, request, render_template, jsonify
-from werkzeug.utils import secure_filename
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Request, UploadFile, File, HTTPException
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 from groq import Groq
 import chromadb
 from chromadb.utils import embedding_functions
@@ -22,9 +26,6 @@ EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", 0.3))
 LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", 1024))
 
-app = Flask(__name__)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB max upload
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
@@ -49,15 +50,28 @@ def load_embedding_model():
         embedding_ready.set()
 
 
-# Start loading the model in a background thread so the server starts immediately
-threading.Thread(target=load_embedding_model, daemon=True).start()
-
-
 def get_embedding_fn():
     embedding_ready.wait(timeout=300)
     if embedding_fn is None:
         raise RuntimeError("Embedding model failed to load")
     return embedding_fn
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    threading.Thread(target=load_embedding_model, daemon=True).start()
+    yield
+
+
+
+app = FastAPI(title="RAG Chatbot", lifespan=lifespan)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
+
+class ChatRequest(BaseModel):
+    filename: str
+    message: str
 
 
 def allowed_file(filename: str) -> bool:
@@ -155,76 +169,82 @@ def ask_llm(context: str, question: str) -> str:
     return chat_completion.choices[0].message.content
 
 
-@app.route("/health")
-def health():
-    return jsonify({
+
+@app.get("/health")
+async def health():
+    return {
         "status": "ok",
         "embedding_ready": embedding_ready.is_set(),
         "embedding_loaded": embedding_fn is not None,
         "groq_key_set": bool(os.environ.get("GROQ_API_KEY")),
-    })
+    }
 
 
-@app.route("/", methods=["GET"])
-def index():
-    return render_template("upload.html")
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    return templates.TemplateResponse("upload.html", {"request": request})
 
 
-@app.route("/upload", methods=["POST"])
-def upload_pdf():
+@app.post("/upload", response_class=HTMLResponse)
+async def upload_pdf(request: Request, file: UploadFile = File(...)):
     try:
-        if "file" not in request.files:
-            return jsonify({"error": "No file part"}), 400
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="No selected file")
 
-        file = request.files["file"]
-        if file.filename == "":
-            return jsonify({"error": "No selected file"}), 400
+        if not allowed_file(file.filename):
+            raise HTTPException(status_code=400, detail="Invalid file type. Only PDF files are allowed.")
 
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-            file.save(filepath)
+        filename = re.sub(r"[^\w\-.]", "_", file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
 
-            collection = index_pdf(filename, filepath)
-            indexed_collections[filename] = collection
-            chunk_count = collection.count()
+        content = await file.read()
+        with open(filepath, "wb") as f:
+            f.write(content)
 
-            return render_template("chat.html", filename=filename, chunk_count=chunk_count)
+        collection = index_pdf(filename, filepath)
+        indexed_collections[filename] = collection
+        chunk_count = collection.count()
 
-        return jsonify({"error": "Invalid file type. Only PDF files are allowed."}), 400
+        return templates.TemplateResponse(
+            "chat.html",
+            {"request": request, "filename": filename, "chunk_count": chunk_count},
+        )
 
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Upload error: {e}", flush=True)
         import traceback
         traceback.print_exc()
-        return jsonify({"error": f"Failed to process PDF: {str(e)}"}), 500
+        raise HTTPException(status_code=500, detail=f"Failed to process PDF: {str(e)}")
 
 
-@app.route("/chat", methods=["POST"])
-def chat():
-    data = request.json
-    filename = data.get("filename")
-    user_message = data.get("message", "").strip()
+@app.post("/chat")
+async def chat(data: ChatRequest):
+    if not data.filename or not data.message.strip():
+        raise HTTPException(status_code=400, detail="Please provide both a filename and a message.")
 
-    if not filename or not user_message:
-        return jsonify({"response": "Please provide both a filename and a message."}), 400
-
-    collection = indexed_collections.get(filename)
+    collection = indexed_collections.get(data.filename)
     if collection is None:
-        return jsonify({"response": "PDF not found. Please upload a PDF first."}), 404
+        raise HTTPException(status_code=404, detail="PDF not found. Please upload a PDF first.")
 
     try:
-        context = retrieve_context(collection, user_message)
+        context = retrieve_context(collection, data.message.strip())
 
         if not context:
-            return jsonify({"response": "I couldn't find any relevant information in the document."})
-        answer = ask_llm(context, user_message)
-        return jsonify({"response": answer})
+            return {"response": "I couldn't find any relevant information in the document."}
+
+        answer = ask_llm(context, data.message.strip())
+        return {"response": answer}
 
     except Exception as e:
         print(f"Error in chat: {e}", flush=True)
-        return jsonify({"response": "Sorry, an error occurred while processing your question. Please try again."}), 500
+        raise HTTPException(
+            status_code=500,
+            detail="Sorry, an error occurred while processing your question. Please try again.",
+        )
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    import uvicorn
+    uvicorn.run("app:app", host="127.0.0.1", port=int(os.environ.get("PORT", 5001)), reload=True)

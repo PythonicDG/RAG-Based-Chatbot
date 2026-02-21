@@ -1,5 +1,7 @@
 import os
 import re
+import sys
+import threading
 from flask import Flask, request, render_template, jsonify
 from werkzeug.utils import secure_filename
 from groq import Groq
@@ -22,23 +24,39 @@ LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", 1024))
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB max upload
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 
 groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 chroma_client = chromadb.Client()
+
 embedding_fn = None
+embedding_ready = threading.Event()
 indexed_collections: dict[str, chromadb.Collection] = {}
 
 
-def get_embedding_fn():
+def load_embedding_model():
     global embedding_fn
-    if embedding_fn is None:
-        print("Loading embedding model...")
+    try:
+        print("Loading embedding model...", flush=True)
         embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name=EMBEDDING_MODEL
         )
-        print("Embedding model loaded.")
+        embedding_ready.set()
+        print("Embedding model loaded successfully.", flush=True)
+    except Exception as e:
+        print(f"Failed to load embedding model: {e}", flush=True)
+        embedding_ready.set()
+
+
+# Start loading the model in a background thread so the server starts immediately
+threading.Thread(target=load_embedding_model, daemon=True).start()
+
+
+def get_embedding_fn():
+    embedding_ready.wait(timeout=300)
+    if embedding_fn is None:
+        raise RuntimeError("Embedding model failed to load")
     return embedding_fn
 
 
@@ -137,6 +155,16 @@ def ask_llm(context: str, question: str) -> str:
     return chat_completion.choices[0].message.content
 
 
+@app.route("/health")
+def health():
+    return jsonify({
+        "status": "ok",
+        "embedding_ready": embedding_ready.is_set(),
+        "embedding_loaded": embedding_fn is not None,
+        "groq_key_set": bool(os.environ.get("GROQ_API_KEY")),
+    })
+
+
 @app.route("/", methods=["GET"])
 def index():
     return render_template("upload.html")
@@ -166,7 +194,7 @@ def upload_pdf():
         return jsonify({"error": "Invalid file type. Only PDF files are allowed."}), 400
 
     except Exception as e:
-        print(f"Upload error: {e}")
+        print(f"Upload error: {e}", flush=True)
         import traceback
         traceback.print_exc()
         return jsonify({"error": f"Failed to process PDF: {str(e)}"}), 500
@@ -194,8 +222,8 @@ def chat():
         return jsonify({"response": answer})
 
     except Exception as e:
-        print(f"Error in chat: {e}")
-        return jsonify({"response": f"Sorry, an error occurred while processing your question. Please try again."}), 500
+        print(f"Error in chat: {e}", flush=True)
+        return jsonify({"response": "Sorry, an error occurred while processing your question. Please try again."}), 500
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ A chatbot that lets you upload a PDF and ask questions about it. It uses retriev
 
 ## Tech Stack
 
-- **Flask** — web server
+- **FastAPI** — web server
 - **ChromaDB** — vector database for storing and searching document chunks
 - **Sentence Transformers** (`all-MiniLM-L6-v2`) — generates embeddings for semantic search
 - **Groq** (`llama-3.1-8b-instant`) — LLM for generating answers

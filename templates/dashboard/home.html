@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | RAG Chatbot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #0a0a1a;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        /* Top navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: 700;
+            color: #6C63FF;
+        }
+
+        .navbar .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .navbar .user-email {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .navbar a.logout-btn {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            padding: 6px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .navbar a.logout-btn:hover {
+            color: #e74c3c;
+            border-color: rgba(231, 76, 60, 0.3);
+        }
+
+        /* Main content */
+        .main {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        .welcome-section h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .welcome-section p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 24px;
+        }
+
+        .stat-card .stat-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.45);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .stat-value.purple {
+            color: #6C63FF;
+        }
+
+        .stat-value.green {
+            color: #4ade80;
+        }
+
+        .stat-value.orange {
+            color: #fb923c;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+
+        .empty-state .emoji {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+
+        .btn-primary {
+            display: inline-block;
+            padding: 12px 28px;
+            background: #6C63FF;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #5a52e0;
+        }
+
+        /* Bot Grid */
+        .bots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .bot-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bot-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bot-color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .bot-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .bot-docs {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-open {
+            font-size: 13px;
+            color: #6C63FF;
+            text-decoration: none;
+            padding: 6px 14px;
+            background: rgba(108, 99, 255, 0.1);
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-open:hover {
+            background: rgba(108, 99, 255, 0.2);
+        }
+
+        .add-bot-card {
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .add-bot-card:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.02);
+            color: #fff;
+        }
+
+        .add-bot-card .plus {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="brand">🤖 RAG Chatbot</div>
+        <div class="nav-right">
+            <span class="user-email">{{ user.email }}</span>
+            <a href="/auth/logout" class="logout-btn">Logout</a>
+        </div>
+    </nav>
+
+    <div class="main">
+        <div class="welcome-section">
+            <h1>Dashboard</h1>
+            <p>Manage your chatbots, upload documents, and get embed codes.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Bots</div>
+                <div class="stat-value purple">{{ bots | length }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Documents</div>
+                <div class="stat-value green">{{ total_docs }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Chat Messages</div>
+                <div class="stat-value orange">{{ total_chats }}</div>
+            </div>
+        </div>
+
+        {% if bots %}
+        <div class="bots-grid">
+            {% for bot in bots %}
+            <div class="bot-card">
+                <div class="bot-info">
+                    <div class="bot-color-dot" style="background: {{ bot.primary_color }}"></div>
+                    <div>
+                        <div class="bot-name">{{ bot.name }}</div>
+                        <div class="bot-docs">{{ bot.documents | length }} Documents</div>
+                    </div>
+                </div>
+                <a href="/dashboard/bots/{{ bot.id }}" class="btn-open">Open</a>
+            </div>
+            {% endfor %}
+            <a href="/dashboard/bots/new" class="add-bot-card">
+                <div class="plus">+</div>
+                <div>Create New Bot</div>
+            </a>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="emoji">🚀</div>
+            <h3>No bots yet</h3>
+            <p>Create your first chatbot to get started</p>
+            <a href="/dashboard/bots/new" class="btn-primary">Create Bot</a>
+        </div>
+        {% endif %}
+    </div>
+</body>
+
+</html>

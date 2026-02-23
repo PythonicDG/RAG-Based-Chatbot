@@ -7,3 +7,5 @@ sentence-transformers
 PyPDF2
 python-dotenv
 jinja2
+sqlalchemy
+werkzeug

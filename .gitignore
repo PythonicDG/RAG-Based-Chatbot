@@ -1,4 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
 venv/
 .env
+
+# Database and Storage
+chroma_db/
+instance/
 uploads/
-__pycache__/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS specfic
+.DS_Store
+Thumbs.db

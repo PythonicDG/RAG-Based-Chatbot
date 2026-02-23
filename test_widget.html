@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widget Test Page</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        h1 {
+            color: #6C63FF;
+        }
+
+        code {
+            background: #e8e8e8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .instructions {
+            background: #fff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+        }
+
+        .note {
+            background: #fff3cd;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Widget Test Page</h1>
+    <p>This is a fake external website. Look at the <strong>bottom-right corner</strong> — you should see a purple chat
+        bubble.</p>
+
+    <div class="instructions">
+        <h3>How it works</h3>
+        <ol>
+            <li>First, upload a PDF at <a href="http://localhost:5001" target="_blank">http://localhost:5001</a></li>
+            <li>Then visit <a href="http://localhost:5001/api/widget/documents"
+                    target="_blank">/api/widget/documents</a> to get the <code>doc_id</code></li>
+            <li>Update the <code>data-doc-id</code> attribute in this page's script tag</li>
+            <li>Click the chat bubble and ask a question!</li>
+        </ol>
+
+        <div class="note">
+            ⚠️ <strong>Note:</strong> This page simulates an external website embedding your widget.
+            The single script tag below is all that's needed!
+        </div>
+    </div>
+
+    <div class="instructions" style="margin-top: 16px;">
+        <h3>Embed code (one line!)</h3>
+        <pre><code>&lt;script src="http://localhost:5001/static/widget.js"
+        data-server="http://localhost:5001"
+        data-doc-id=AI_Foundations_For_RAG_Chatbot.pdf
+        data-bot-name="My Assistant"
+        data-color="#6C63FF"
+        data-welcome="Hi! Ask me anything about the document 📄"&gt;&lt;/script&gt;</code></pre>
+    </div>
+
+    <!-- 👇 This single line is ALL someone needs to embed your chatbot -->
+    <script src="http://localhost:5001/static/widget.js" data-server="http://localhost:5001" data-bot-id="1"
+        data-bot-name="My Assistant" data-color="#6C63FF"
+        data-welcome="Hi there! 👋 Upload a PDF first, then come back and ask me anything!">
+        </script>
+</body>
+
+</html>

@@ -1,21 +1,14 @@
-# RAG Based Chatbot
+# RAG Chatbot: SaaS Platform 🤖
 
-A chatbot that lets you upload a PDF and ask questions about it. It uses retrieval-augmented generation (RAG) to find the most relevant parts of your document and then uses an LLM to answer your question in natural language.
+A production-ready chatbot platform that lets you manage multiple chatbots, upload document collections, and embed them on any website. It uses Retrieval-Augmented Generation (RAG) with ChromaDB and Groq LLMs.
 
-## How It Works
+## Key Features
 
-1. You upload a PDF file
-2. The app splits the text into small chunks and stores them as vector embeddings
-3. When you ask a question, it finds the most relevant chunks using semantic search
-4. Those chunks are sent along with your question to an LLM, which generates an answer
-
-## Tech Stack
-
-- **FastAPI** — web server
-- **ChromaDB** — vector database for storing and searching document chunks
-- **Sentence Transformers** (`all-MiniLM-L6-v2`) — generates embeddings for semantic search
-- **Groq** (`llama-3.1-8b-instant`) — LLM for generating answers
-- **PyPDF2** — extracts text from PDFs
+- **Admin Dashboard**: Manage multiple bots, document collections, and view analytics.
+- **Secure Auth**: User signup/login system with persistent sessions.
+- **Bot-Centric RAG**: Chatbots only answer based on documents assigned to them.
+- **Embeddable Widget**: A professionally styled, single-line script to add chat to any site.
+- **Analytics**: Track message counts, unique sessions, and response latency.
 
 ## Setup
 
@@ -32,10 +25,11 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Create a `.env` file with your Groq API key:
+3. Create a `.env` file with your keys:
 
 ```
-GROQ_API_KEY=your_api_key_here
+GROQ_API_KEY=your_groq_key
+SECRET_KEY=your_session_secret
 ```
 
 4. Run the app:
@@ -44,18 +38,19 @@ GROQ_API_KEY=your_api_key_here
 python app.py
 ```
 
-5. Open `http://127.0.0.1:5000` in your browser, upload a PDF, and start chatting.
+5. Visit `http://127.0.0.1:5001/auth/signup` to create your admin account.
 
 ## Project Structure
 
 ```
-├── app.py              # Main application with RAG pipeline
-├── requirements.txt    # Python dependencies
-├── .env                # API keys (not committed)
-├── templates/
-│   ├── upload.html     # PDF upload page
-│   └── chat.html       # Chat interface
+├── app.py              # Backend API & Dashboard Routes
+├── auth.py             # Authentication Logic
+├── models.py           # SQLAlchemy Database Models
 ├── static/
-│   └── style.css       # Styling
-└── uploads/            # Uploaded PDF files
+│   └── widget.js       # Embeddable Chat Widget
+├── templates/
+│   ├── auth/           # Login/Signup Pages
+│   └── dashboard/      # Admin Panel & Stats
+├── instance/           # SQLite Database Files
+└── chroma_db/          # Vector Store Index
 ```

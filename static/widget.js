@@ -1,26 +1,26 @@
 (function () {
-    "use strict";
+  "use strict";
 
-    // ── Read config from the script tag ────────────────────────────────────────
-    const scriptTag = document.currentScript;
-    const API_URL = scriptTag.getAttribute("data-server") || "http://localhost:5001";
-    const BOT_ID = scriptTag.getAttribute("data-bot-id") || "";
-    const BOT_NAME = scriptTag.getAttribute("data-bot-name") || "RAG Chatbot";
-    const PRIMARY_COLOR = scriptTag.getAttribute("data-color") || "#6C63FF";
-    const WELCOME_MSG =
-        scriptTag.getAttribute("data-welcome") ||
-        "Hi there! 👋 Ask me anything about the document.";
+  // ── Read config from the script tag ────────────────────────────────────────
+  const scriptTag = document.currentScript;
+  const API_URL = scriptTag.getAttribute("data-server") || "http://localhost:5001";
+  const BOT_ID = scriptTag.getAttribute("data-bot-id") || "";
+  const BOT_NAME = scriptTag.getAttribute("data-bot-name") || "RAG Chatbot";
+  const PRIMARY_COLOR = scriptTag.getAttribute("data-color") || "#6C63FF";
+  const WELCOME_MSG =
+    scriptTag.getAttribute("data-welcome") ||
+    "Hi there! 👋 Ask me anything about the document.";
 
-    // ── Session Management ─────────────────────────────────────────────────────
-    let SESSION_ID = localStorage.getItem("rag_bot_session_id");
-    if (!SESSION_ID) {
-        SESSION_ID = "sess_" + Math.random().toString(36).substring(2, 15);
-        localStorage.setItem("rag_bot_session_id", SESSION_ID);
-    }
+  // ── Session Management ─────────────────────────────────────────────────────
+  let SESSION_ID = localStorage.getItem("rag_bot_session_id");
+  if (!SESSION_ID) {
+    SESSION_ID = "sess_" + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem("rag_bot_session_id", SESSION_ID);
+  }
 
-    // ── Inject styles ──────────────────────────────────────────────────────────
-    const style = document.createElement("style");
-    style.textContent = `
+  // ── Inject styles ──────────────────────────────────────────────────────────
+  const style = document.createElement("style");
+  style.textContent = `
     #rag-widget-bubble {
       position: fixed;
       bottom: 24px;
@@ -94,16 +94,27 @@
       border-radius: 50%;
       display: inline-block;
     }
-    .rag-w-close {
+    .rag-w-close:hover { opacity: 1; }
+
+    .rag-w-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .rag-w-header-btn {
       background: none;
       border: none;
       color: #fff;
       cursor: pointer;
-      font-size: 20px;
-      padding: 0;
-      opacity: 0.8;
+      font-size: 16px;
+      padding: 4px;
+      opacity: 0.7;
+      display: flex;
+      align-items: center;
+      transition: opacity 0.2s;
     }
-    .rag-w-close:hover { opacity: 1; }
+    .rag-w-header-btn:hover { opacity: 1; }
+    .rag-w-header-btn svg { width: 16px; height: 16px; }
 
     /* Messages area */
     .rag-w-messages {
@@ -122,11 +133,28 @@
 
     .rag-w-msg {
       max-width: 85%;
-      padding: 10px 14px;
+      padding: 12px 14px;
       border-radius: 12px;
-      font-size: 13px;
-      line-height: 1.5;
+      font-size: 13.5px;
+      line-height: 1.6;
       word-wrap: break-word;
+    }
+    .rag-w-msg p { margin: 8px 0; }
+    .rag-w-msg p:first-child { margin-top: 0; }
+    .rag-w-msg p:last-child { margin-bottom: 0; }
+    .rag-w-msg ul, .rag-w-msg ol { padding-left: 20px; margin: 8px 0; }
+    .rag-w-msg code {
+      background: rgba(0,0,0,0.3);
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .rag-w-msg pre {
+      background: rgba(0,0,0,0.3);
+      padding: 10px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 8px 0;
     }
     .rag-w-msg.bot {
       align-self: flex-start;
@@ -161,8 +189,8 @@
     .rag-w-typing span:nth-child(2) { animation-delay: 0.2s; }
     .rag-w-typing span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes rag-bounce {
-      0%, 60%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-6px); }
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-6px); opacity: 1; }
     }
 
     /* Input area */
@@ -212,30 +240,39 @@
       color: rgba(255,255,255,0.25);
     }
   `;
-    document.head.appendChild(style);
+  document.head.appendChild(style);
 
-    // ── Create chat bubble button ──────────────────────────────────────────────
-    const bubble = document.createElement("button");
-    bubble.id = "rag-widget-bubble";
-    bubble.innerHTML = `
+  // ── Create chat bubble button ──────────────────────────────────────────────
+  const bubble = document.createElement("button");
+  bubble.id = "rag-widget-bubble";
+  bubble.innerHTML = `
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
          stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
     </svg>`;
-    document.body.appendChild(bubble);
+  document.body.appendChild(bubble);
 
-    // ── Create chat window ─────────────────────────────────────────────────────
-    const win = document.createElement("div");
-    win.id = "rag-widget-window";
-    win.innerHTML = `
+  // ── Create chat window ─────────────────────────────────────────────────────
+  const win = document.createElement("div");
+  win.id = "rag-widget-window";
+  win.innerHTML = `
     <div class="rag-w-header">
       <div class="rag-w-header-left">
         <div>
           <h4>${BOT_NAME} <span class="rag-w-dot"></span></h4>
-          <p>Ask anything about the document</p>
+          <p>Online</p>
         </div>
       </div>
-      <button class="rag-w-close">&times;</button>
+      <div class="rag-w-actions">
+        <button class="rag-w-header-btn" id="rag-w-clear" title="Clear Chat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+        <button class="rag-w-close">&times;</button>
+      </div>
     </div>
     <div class="rag-w-messages" id="rag-w-messages"></div>
     <div class="rag-w-input-area">
@@ -249,89 +286,139 @@
       </button>
     </div>
     <div class="rag-w-powered">Powered by RAG Chatbot</div>`;
-    document.body.appendChild(win);
+  document.body.appendChild(win);
 
-    // ── Element references ─────────────────────────────────────────────────────
-    const messagesEl = document.getElementById("rag-w-messages");
-    const inputEl = document.getElementById("rag-w-input");
-    const sendBtn = document.getElementById("rag-w-send");
-    const closeBtn = win.querySelector(".rag-w-close");
+  // ── Element references ─────────────────────────────────────────────────────
+  const messagesEl = document.getElementById("rag-w-messages");
+  const inputEl = document.getElementById("rag-w-input");
+  const sendBtn = document.getElementById("rag-w-send");
+  const clearBtn = document.getElementById("rag-w-clear");
+  const closeBtn = win.querySelector(".rag-w-close");
 
-    // ── Toggle open/close ──────────────────────────────────────────────────────
-    let isOpen = false;
-    let welcomed = false;
+  // ── Toggle open/close ──────────────────────────────────────────────────────
+  let isOpen = false;
+  let welcomed = false;
 
-    bubble.addEventListener("click", () => {
-        isOpen = !isOpen;
-        win.classList.toggle("open", isOpen);
-        if (isOpen && !welcomed) {
-            addMessage(WELCOME_MSG, "bot");
-            welcomed = true;
-        }
-        if (isOpen) inputEl.focus();
-    });
+  bubble.addEventListener("click", () => {
+    isOpen = !isOpen;
+    win.classList.toggle("open", isOpen);
+    if (isOpen && !welcomed) {
+      addMessage(WELCOME_MSG, "bot");
+      welcomed = true;
+    }
+    if (isOpen) inputEl.focus();
+  });
 
-    closeBtn.addEventListener("click", () => {
-        isOpen = false;
-        win.classList.remove("open");
-    });
+  closeBtn.addEventListener("click", () => {
+    isOpen = false;
+    win.classList.remove("open");
+  });
 
-    // ── Message helpers ────────────────────────────────────────────────────────
-    function addMessage(text, sender) {
-        const el = document.createElement("div");
-        el.className = `rag-w-msg ${sender}`;
-        el.textContent = text;
-        messagesEl.appendChild(el);
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-        return el;
+  // ── Markdown Parser (Lightweight) ──────────────────────────────────────────
+  function parseMarkdown(text) {
+    return text
+      // Code blocks
+      .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+      // Inline code
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      // Bold
+      .replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>')
+      // Italic
+      .replace(/\*([^\*]+)\*/g, '<em>$1</em>')
+      // Bullet points
+      .replace(/^\s*[\-\*]\s+(.*)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+      // Line breaks
+      .replace(/\n/g, '<br/>');
+  }
+
+  // ── Message helpers ────────────────────────────────────────────────────────
+  function addMessage(text, sender, save = true) {
+    const el = document.createElement("div");
+    el.className = `rag-w-msg ${sender}`;
+    el.innerHTML = parseMarkdown(text);
+    messagesEl.appendChild(el);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    if (save) {
+      const history = JSON.parse(localStorage.getItem(`rag_history_${BOT_ID}`) || "[]");
+      history.push({ text, sender });
+      localStorage.setItem(`rag_history_${BOT_ID}`, JSON.stringify(history));
+    }
+    return el;
+  }
+
+  function loadHistory() {
+    const history = JSON.parse(localStorage.getItem(`rag_history_${BOT_ID}`) || "[]");
+    if (history.length > 0) {
+      welcomed = true;
+      history.forEach(msg => addMessage(msg.text, msg.sender, false));
+    }
+  }
+
+  function clearHistory() {
+    localStorage.removeItem(`rag_history_${BOT_ID}`);
+    messagesEl.innerHTML = "";
+    welcomed = false;
+    addMessage(WELCOME_MSG, "bot");
+    welcomed = true;
+  }
+
+  function addTyping() {
+    const el = document.createElement("div");
+    el.className = "rag-w-typing";
+    el.innerHTML = "<span></span><span></span><span></span>";
+    messagesEl.appendChild(el);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return el;
+  }
+
+  // ── Send message ───────────────────────────────────────────────────────────
+  async function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text || !BOT_ID) return;
+
+    addMessage(text, "user");
+    inputEl.value = "";
+    sendBtn.disabled = true;
+    inputEl.disabled = true;
+
+    const typingEl = addTyping();
+
+    try {
+      const res = await fetch(`${API_URL}/api/widget/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bot_id: parseInt(BOT_ID),
+          message: text,
+          session_id: SESSION_ID
+        }),
+      });
+      const data = await res.json();
+      typingEl.remove();
+      addMessage(data.response || data.detail || "No response.", "bot");
+    } catch (err) {
+      typingEl.remove();
+      addMessage("Sorry, something went wrong. Please try again.", "bot");
     }
 
-    function addTyping() {
-        const el = document.createElement("div");
-        el.className = "rag-w-typing";
-        el.innerHTML = "<span></span><span></span><span></span>";
-        messagesEl.appendChild(el);
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-        return el;
+    sendBtn.disabled = false;
+    inputEl.disabled = false;
+    inputEl.focus();
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendMessage();
+  });
+
+  clearBtn.addEventListener("click", () => {
+    if (confirm("Clear this conversation?")) {
+      clearHistory();
     }
+  });
 
-    // ── Send message ───────────────────────────────────────────────────────────
-    async function sendMessage() {
-        const text = inputEl.value.trim();
-        if (!text || !BOT_ID) return;
-
-        addMessage(text, "user");
-        inputEl.value = "";
-        sendBtn.disabled = true;
-        inputEl.disabled = true;
-
-        const typingEl = addTyping();
-
-        try {
-            const res = await fetch(`${API_URL}/api/widget/chat`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    bot_id: parseInt(BOT_ID),
-                    message: text,
-                    session_id: SESSION_ID
-                }),
-            });
-            const data = await res.json();
-            typingEl.remove();
-            addMessage(data.response || data.detail || "No response.", "bot");
-        } catch (err) {
-            typingEl.remove();
-            addMessage("Sorry, something went wrong. Please try again.", "bot");
-        }
-
-        sendBtn.disabled = false;
-        inputEl.disabled = false;
-        inputEl.focus();
-    }
-
-    sendBtn.addEventListener("click", sendMessage);
-    inputEl.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") sendMessage();
-    });
+  // Initialize history
+  loadHistory();
 })();

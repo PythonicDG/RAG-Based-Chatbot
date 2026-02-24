@@ -7,8 +7,9 @@ A production-ready chatbot platform that lets you manage multiple chatbots, uplo
 - **Admin Dashboard**: Manage multiple bots, document collections, and view analytics.
 - **Secure Auth**: User signup/login system with persistent sessions.
 - **Bot-Centric RAG**: Chatbots only answer based on documents assigned to them.
-- **Embeddable Widget**: A professionally styled, single-line script to add chat to any site.
+- **Embeddable Widget**: A professionally styled, single-line script with **Markdown support**, **Message persistence**, and **Session management**.
 - **Analytics**: Track message counts, unique sessions, and response latency.
+- **Smart RAG**: Automatic PDF chunking and semantic search with ChromaDB.
 
 ## Setup
 
@@ -25,7 +26,13 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Create a `.env` file with your keys:
+3. Create a `.env` file by copying the template:
+
+```bash
+cp .env.example .env
+```
+
+And then edit `.env` with your real keys:
 
 ```
 GROQ_API_KEY=your_groq_key

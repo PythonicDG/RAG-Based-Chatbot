@@ -67,7 +67,6 @@ def get_safe_collection(bot_id: int):
     """Helper to get a collection, handling embedding function conflicts."""
     collection_name = f"bot_{bot_id}"
     try:
-        # Try to get the existing collection
         return chroma_client.get_collection(
             name=collection_name,
             embedding_function=get_embedding_fn()
@@ -134,10 +133,6 @@ templates = Jinja2Templates(directory="templates")
 
 app.include_router(auth_router, prefix="/auth")
 
-
-# Removed legacy ChatRequest class
-
-
 class WidgetChatRequest(BaseModel):
     message: str
     bot_id: int
@@ -175,7 +170,6 @@ def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVE
 def index_pdf(bot_id: int, doc_id: int, filename: str, pdf_path: str) -> chromadb.Collection:
     collection_name = f"bot_{bot_id}"
     
-    # Get or create collection safely
     collection = get_safe_collection(bot_id)
 
     text = extract_text_from_pdf(pdf_path)
@@ -332,7 +326,6 @@ async def bot_details(request: Request, bot_id: int):
         if not bot:
             raise HTTPException(status_code=404, detail="Bot not found")
         
-        # For now, just a placeholder or list docs
         return templates.TemplateResponse("dashboard/bot_details.html", {
             "request": request,
             "user": user,
@@ -354,7 +347,6 @@ async def bot_embed(request: Request, bot_id: int):
         if not bot:
             raise HTTPException(status_code=404, detail="Bot not found")
         
-        # Determine current server host
         server_url = f"{request.url.scheme}://{request.url.netloc}"
         
         return templates.TemplateResponse("dashboard/embed.html", {
@@ -379,7 +371,6 @@ async def bot_analytics(request: Request, bot_id: int):
         if not bot:
             raise HTTPException(status_code=404, detail="Bot not found")
         
-        # Get logs and aggregate stats
         logs = db.query(ChatLog).filter(ChatLog.bot_id == bot_id).order_by(ChatLog.created_at.desc()).limit(100).all()
         
         total_messages = db.query(ChatLog).filter(ChatLog.bot_id == bot_id).count()
@@ -428,7 +419,6 @@ async def upload_bot_pdf(request: Request, bot_id: int, file: UploadFile = File(
         with open(filepath, "wb") as f:
             f.write(content)
 
-        # 1. Create DB record
         new_doc = Document(
             bot_id=bot.id,
             filename=filename,
@@ -439,12 +429,7 @@ async def upload_bot_pdf(request: Request, bot_id: int, file: UploadFile = File(
         db.commit()
         db.refresh(new_doc)
 
-        # 2. Index in Chroma
         collection = index_pdf(bot.id, new_doc.id, file.filename, filepath)
-        
-        # 3. Update chunk count
-        # In a real app we might count specific chunks but here we just know it succeeded
-        # We can re-fetch or count from index_pdf if we want to be precise
         
         return RedirectResponse(f"/dashboard/bots/{bot_id}", status_code=303)
 
@@ -471,16 +456,13 @@ async def delete_document(request: Request, bot_id: int, doc_id: int):
         if not doc or doc.bot.user_id != user.id:
             raise HTTPException(status_code=404, detail="Document not found")
 
-        # 1. Delete from Chroma
         collection = get_safe_collection(bot_id)
         collection.delete(where={"doc_id": doc_id})
 
-        # 2. Delete file
         filepath = os.path.join(UPLOAD_FOLDER, doc.filename)
         if os.path.exists(filepath):
             os.remove(filepath)
 
-        # 3. Delete from DB
         db.delete(doc)
         db.commit()
 
@@ -489,16 +471,11 @@ async def delete_document(request: Request, bot_id: int, doc_id: int):
         db.close()
 
 
-# ── Widget API (for embeddable chatbot) ──────────────────────────────────────
-
 @app.get("/api/widget/documents")
 async def widget_list_documents():
     """List all uploaded PDFs available for the widget."""
-    # This endpoint is no longer directly tied to indexed_collections
-    # It would need to query the DB for available bots/documents
-    # For now, returning an empty list or adapting based on actual bot data
     return {
-        "documents": [] # Placeholder, as indexed_collections is removed
+        "documents": []
     }
 
 
@@ -522,7 +499,6 @@ async def widget_chat(data: WidgetChatRequest):
         else:
             answer = ask_llm(context, data.message.strip())
         
-        # Log the chat
         db = SessionLocal()
         try:
             log = ChatLog(

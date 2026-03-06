@@ -2,6 +2,7 @@ import os
 import re
 import uuid
 import time
+import logging
 import threading
 from contextlib import asynccontextmanager
 
@@ -22,6 +23,9 @@ from auth import router as auth_router, get_current_user
 
 load_dotenv()
 
+APP_VERSION = "1.2.0"
+APP_START_TIME = time.time()
+
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"pdf"}
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE", 500))
@@ -31,6 +35,9 @@ LLM_MODEL = os.environ.get("LLM_MODEL", "llama-3.1-8b-instant")
 EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", 0.3))
 LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", 1024))
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -237,11 +244,55 @@ def ask_llm(context: str, question: str) -> str:
 
 @app.get("/health")
 async def health():
+    uptime_seconds = round(time.time() - APP_START_TIME, 2)
     return {
         "status": "ok",
+        "version": APP_VERSION,
+        "uptime_seconds": uptime_seconds,
         "embedding_ready": embedding_ready.is_set(),
         "embedding_loaded": embedding_fn is not None,
         "groq_key_set": bool(os.environ.get("GROQ_API_KEY")),
+    }
+
+
+@app.get("/health/detailed")
+async def health_detailed():
+    """Detailed health check with database and collection stats."""
+    uptime_seconds = round(time.time() - APP_START_TIME, 2)
+    db = SessionLocal()
+    try:
+        bot_count = db.query(Bot).count()
+        doc_count = db.query(Document).count()
+        chat_count = db.query(ChatLog).count()
+    finally:
+        db.close()
+
+    collections = []
+    try:
+        for col in chroma_client.list_collections():
+            name = col.name if hasattr(col, "name") else str(col)
+            collections.append(name)
+    except Exception:
+        pass
+
+    return {
+        "status": "ok",
+        "version": APP_VERSION,
+        "uptime_seconds": uptime_seconds,
+        "embedding_ready": embedding_ready.is_set(),
+        "embedding_loaded": embedding_fn is not None,
+        "database": {
+            "bots": bot_count,
+            "documents": doc_count,
+            "chat_logs": chat_count,
+        },
+        "collections": collections,
+        "config": {
+            "llm_model": LLM_MODEL,
+            "embedding_model": EMBEDDING_MODEL,
+            "chunk_size": CHUNK_SIZE,
+            "top_k": TOP_K,
+        },
     }
 
 

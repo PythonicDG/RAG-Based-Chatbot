@@ -22,6 +22,22 @@
             color: #fff;
         }
 
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .main {
+            animation: fadeInUp 0.45s ease-out;
+        }
+
         /* Top navbar */
         .navbar {
             display: flex;
@@ -29,7 +45,8 @@
             align-items: center;
             padding: 16px 32px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(255, 255, 255, 0.02);
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.04), rgba(255, 255, 255, 0.02));
+            backdrop-filter: blur(12px);
         }
 
         .navbar .brand {
@@ -37,6 +54,11 @@
             font-weight: 700;
             color: #6C63FF;
             text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .navbar .brand:hover {
+            opacity: 0.85;
         }
 
         /* Main content */
@@ -75,6 +97,14 @@
             align-items: center;
             justify-content: center;
             font-size: 24px;
+
+            box-shadow: 0 0 16px {
+                    {
+                    bot.primary_color
+                }
+            }
+
+            33;
         }
 
         .header-section h1 {
@@ -86,6 +116,93 @@
         .header-section .subtitle {
             color: rgba(255, 255, 255, 0.5);
             font-size: 14px;
+        }
+
+        .header-section .subtitle code {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        /* Tab row */
+        .tab-nav {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 0;
+        }
+
+        .tab-nav a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-size: 14px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .tab-nav a:hover {
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .tab-nav a.active {
+            color: #6C63FF;
+            font-weight: 600;
+            border-bottom: 2px solid #6C63FF;
+        }
+
+        /* Header action buttons */
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-ghost {
+            color: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.18);
+        }
+
+        .btn-analytics {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-analytics:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.18);
+        }
+
+        .btn-embed {
+            background: rgba(108, 99, 255, 0.1);
+            color: #6C63FF;
+            border: 1px solid rgba(108, 99, 255, 0.2);
+        }
+
+        .btn-embed:hover {
+            background: rgba(108, 99, 255, 0.18);
+            border-color: rgba(108, 99, 255, 0.35);
         }
 
         /* Panel Grid */
@@ -110,6 +227,25 @@
             justify-content: space-between;
         }
 
+        /* Upload button */
+        .btn-upload {
+            background: #6C63FF;
+            color: #fff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s, box-shadow 0.25s;
+        }
+
+        .btn-upload:hover {
+            background: #5a52e0;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+        }
+
         /* Docs List */
         .doc-item {
             display: flex;
@@ -120,6 +256,13 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 10px;
             margin-bottom: 8px;
+            transition: background 0.2s, border-color 0.2s, transform 0.2s;
+        }
+
+        .doc-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(3px);
         }
 
         .doc-name {
@@ -131,20 +274,69 @@
             color: rgba(255, 255, 255, 0.3);
         }
 
-        .btn-sm {
+        .btn-delete {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border: none;
+            cursor: pointer;
             padding: 6px 12px;
             border-radius: 6px;
             font-size: 12px;
             font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s;
+            transition: background 0.2s, transform 0.15s;
         }
 
-        .btn-upload {
-            background: #6C63FF;
-            color: #fff;
-            border: none;
+        .btn-delete:hover {
+            background: rgba(231, 76, 60, 0.2);
+            transform: scale(1.03);
+        }
+
+        .btn-danger-full {
+            width: 100%;
+            height: 40px;
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.2);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .btn-danger-full:hover {
+            background: rgba(231, 76, 60, 0.18);
+            border-color: rgba(231, 76, 60, 0.35);
+        }
+
+        .settings-info {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        .settings-info p {
+            margin-bottom: 0;
+        }
+
+        .color-swatch {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            vertical-align: middle;
+        }
+
+        .empty-docs {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 14px;
+        }
+
+        hr.divider {
+            border: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            margin: 20px 0;
         }
     </style>
 </head>
@@ -163,24 +355,17 @@
                     <p class="subtitle">API Key: <code>{{ bot.api_key }}</code></p>
                 </div>
             </div>
-            <div style="display: flex; gap: 10px;">
-                <a href="/dashboard/bots/{{ bot.id }}/analytics" class="btn-sm"
-                    style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); text-decoration:none;">Analytics</a>
-                <a href="/dashboard/bots/{{ bot.id }}/embed" class="btn-sm"
-                    style="background: rgba(108, 99, 255, 0.1); color: #6C63FF; border: 1px solid rgba(108, 99, 255, 0.2); text-decoration:none;">Embed
-                    Code</a>
-                <a href="/dashboard" class="btn-sm"
-                    style="color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); text-decoration:none;">Back</a>
+            <div class="header-actions">
+                <a href="/dashboard/bots/{{ bot.id }}/analytics" class="btn-sm btn-analytics">Analytics</a>
+                <a href="/dashboard/bots/{{ bot.id }}/embed" class="btn-sm btn-embed">Embed Code</a>
+                <a href="/dashboard" class="btn-sm btn-ghost">Back</a>
             </div>
         </div>
 
-        <div style="display: flex; gap: 20px; margin-bottom: 24px;">
-            <a href="#"
-                style="color: #6C63FF; font-weight: 600; text-decoration: none; border-bottom: 2px solid #6C63FF; padding-bottom: 4px;">Documents</a>
-            <a href="/dashboard/bots/{{ bot.id }}/analytics"
-                style="color: rgba(255,255,255,0.5); text-decoration: none;">Analytics</a>
-            <a href="/dashboard/bots/{{ bot.id }}/embed"
-                style="color: rgba(255,255,255,0.5); text-decoration: none;">Embed Code</a>
+        <div class="tab-nav">
+            <a href="#" class="active">Documents</a>
+            <a href="/dashboard/bots/{{ bot.id }}/analytics">Analytics</a>
+            <a href="/dashboard/bots/{{ bot.id }}/embed">Embed Code</a>
         </div>
 
         <div class="panel-grid">
@@ -189,7 +374,7 @@
                     Documents
                     <form action="/dashboard/bots/{{ bot.id }}/upload" method="post" enctype="multipart/form-data"
                         id="upload-form" style="display:inline;">
-                        <label for="file-upload" class="btn-sm btn-upload" style="cursor:pointer;">+ Upload PDF</label>
+                        <label for="file-upload" class="btn-upload" style="cursor:pointer;">+ Upload PDF</label>
                         <input id="file-upload" type="file" name="file" accept=".pdf" style="display:none;"
                             onchange="this.form.submit();">
                     </form>
@@ -205,14 +390,13 @@
                     </div>
                     <form action="/dashboard/bots/{{ bot.id }}/documents/{{ doc.id }}/delete" method="post"
                         style="display:inline;">
-                        <button type="submit" class="btn-sm"
-                            style="background: rgba(231,76,60,0.1); color: #e74c3c; border: none; cursor:pointer;"
+                        <button type="submit" class="btn-delete"
                             onclick="return confirm('Delete this document?');">Delete</button>
                     </form>
                 </div>
                 {% endfor %}
                 {% else %}
-                <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.3);">
+                <div class="empty-docs">
                     No documents yet. Upload a PDF to start.
                 </div>
                 {% endif %}
@@ -220,17 +404,15 @@
 
             <div class="panel">
                 <h3>Settings</h3>
-                <div style="color: rgba(255,255,255,0.6); font-size: 14px;">
-                    <p><strong>Primary Color:</strong> <span
-                            style="display:inline-block; width:12px; height:12px; border-radius:3px; background:{{ bot.primary_color }};"></span>
+                <div class="settings-info">
+                    <p><strong>Primary Color:</strong> <span class="color-swatch"
+                            style="background:{{ bot.primary_color }};"></span>
                         {{ bot.primary_color }}</p>
                     <p style="margin-top:12px;"><strong>Welcome Msg:</strong></p>
                     <p style="font-size:12px; font-style:italic; margin-top:4px;">"{{ bot.welcome_message }}"</p>
                 </div>
-                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 20px 0;">
-                <button class="btn-sm"
-                    style="width:100%; height:40px; background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2);">Delete
-                    Bot</button>
+                <hr class="divider">
+                <button class="btn-danger-full">Delete Bot</button>
             </div>
         </div>
     </div>

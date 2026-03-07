@@ -23,7 +23,7 @@ from auth import router as auth_router, get_current_user
 
 load_dotenv()
 
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.3.0"
 APP_START_TIME = time.time()
 
 UPLOAD_FOLDER = "uploads"

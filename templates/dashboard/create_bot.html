@@ -22,6 +22,18 @@
             color: #fff;
         }
 
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Top navbar */
         .navbar {
             display: flex;
@@ -37,6 +49,11 @@
             font-weight: 700;
             color: #6C63FF;
             text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .navbar .brand:hover {
+            opacity: 0.85;
         }
 
         /* Main content */
@@ -44,6 +61,7 @@
             max-width: 600px;
             margin: 40px auto;
             padding: 0 24px;
+            animation: fadeInUp 0.45s ease-out;
         }
 
         .header-section {
@@ -68,6 +86,7 @@
             border-radius: 20px;
             padding: 32px;
             backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
 
         .form-group {
@@ -99,6 +118,7 @@
         .form-group input:focus,
         .form-group textarea:focus {
             border-color: #6C63FF;
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.15);
         }
 
         .form-group input[type="color"] {
@@ -133,6 +153,8 @@
 
         .btn-primary:hover {
             background: #5a52e0;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(108, 99, 255, 0.35);
         }
 
         .btn-secondary {

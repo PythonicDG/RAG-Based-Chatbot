@@ -25,6 +25,42 @@
             color: #fff;
         }
 
+        @keyframes floatOrb1 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(30px, 20px);
+            }
+        }
+
+        @keyframes floatOrb2 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(-20px, -15px);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .bg-orb {
             position: fixed;
             border-radius: 50%;
@@ -39,6 +75,7 @@
             background: #6C63FF;
             top: -100px;
             left: -100px;
+            animation: floatOrb1 8s ease-in-out infinite;
         }
 
         .bg-orb-2 {
@@ -47,6 +84,7 @@
             background: #e74c3c;
             bottom: -50px;
             right: -50px;
+            animation: floatOrb2 10s ease-in-out infinite;
         }
 
         .auth-card {
@@ -59,6 +97,8 @@
             backdrop-filter: blur(20px);
             position: relative;
             z-index: 1;
+            animation: fadeInUp 0.5s ease-out;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .auth-card h1 {
@@ -100,6 +140,7 @@
 
         .form-group input:focus {
             border-color: #6C63FF;
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.15);
         }
 
         .form-group input::placeholder {
@@ -127,11 +168,12 @@
             font-weight: 600;
             cursor: pointer;
             font-family: inherit;
-            transition: background 0.2s, transform 0.1s;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.25s;
         }
 
         .btn-submit:hover {
             background: #5a52e0;
+            box-shadow: 0 4px 16px rgba(108, 99, 255, 0.35);
         }
 
         .btn-submit:active {

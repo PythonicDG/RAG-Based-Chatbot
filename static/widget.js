@@ -55,13 +55,22 @@
       background: #1a1a2e;
       box-shadow: 0 10px 40px rgba(0,0,0,0.4);
       z-index: 99998;
-      display: none;
+      display: flex;
       flex-direction: column;
       overflow: hidden;
       font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
       border: 1px solid rgba(255,255,255,0.08);
+      transform: translateY(20px) scale(0.95);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    #rag-widget-window.open { display: flex; }
+    #rag-widget-window.open {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
 
     /* Header */
     .rag-w-header {
@@ -93,8 +102,12 @@
       background: #4ade80;
       border-radius: 50%;
       display: inline-block;
+      animation: rag-pulse-dot 2s infinite;
     }
-    .rag-w-close:hover { opacity: 1; }
+    @keyframes rag-pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
 
     .rag-w-actions {
       display: flex;
@@ -232,6 +245,16 @@
     }
     .rag-w-input-area button svg { width: 18px; height: 18px; }
 
+    /* Bubble pulse animation on load */
+    @keyframes rag-bubble-pulse {
+      0% { box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+      50% { box-shadow: 0 4px 20px rgba(0,0,0,0.25), 0 0 0 8px ${PRIMARY_COLOR}33; }
+      100% { box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+    }
+    #rag-widget-bubble:not(.rag-opened) {
+      animation: rag-bubble-pulse 2.5s ease-in-out 3;
+    }
+
     /* Powered by badge */
     .rag-w-powered {
       text-align: center;
@@ -271,7 +294,13 @@
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
           </svg>
         </button>
-        <button class="rag-w-close">&times;</button>
+        <button class="rag-w-header-btn rag-w-close" title="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
     </div>
     <div class="rag-w-messages" id="rag-w-messages"></div>
@@ -302,11 +331,12 @@
   bubble.addEventListener("click", () => {
     isOpen = !isOpen;
     win.classList.toggle("open", isOpen);
+    bubble.classList.add("rag-opened");
     if (isOpen && !welcomed) {
       addMessage(WELCOME_MSG, "bot");
       welcomed = true;
     }
-    if (isOpen) inputEl.focus();
+    if (isOpen) setTimeout(() => inputEl.focus(), 350);
   });
 
   closeBtn.addEventListener("click", () => {

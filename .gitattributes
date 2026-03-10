@@ -1,0 +1,9 @@
+# Mark HTML templates as non-language (they serve the Python app)
+templates/**/*.html linguist-vendored
+
+# Mark static assets as non-language
+static/**/*.js linguist-vendored
+static/**/*.css linguist-vendored
+
+# Mark test HTML files as non-language
+test_widget.html linguist-vendored

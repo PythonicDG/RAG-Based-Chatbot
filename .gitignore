@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 venv/
 .env
+.python-version
 
 # Database and Storage
 chroma_db/
@@ -13,7 +14,8 @@ uploads/
 # IDEs
 .vscode/
 .idea/
+.gemini/
 
-# OS specfic
+# OS specific
 .DS_Store
 Thumbs.db

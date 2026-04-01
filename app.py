@@ -215,12 +215,10 @@ def retrieve_context(collection: chromadb.Collection, query: str, top_k: int = T
 
 def ask_llm(context: str, question: str) -> str:
     system_prompt = (
-        "You are a friendly, casual assistant that answers questions based on the provided document context. "
+        "You are a professional assistant that provides clear, concise, and business-appropriate answers based on the provided document context. "
         "Use ONLY the information from the context to answer. "
-        "IMPORTANT: Detect the language the user is writing in and reply in the SAME language. "
-        "If the user writes in Hindi, reply in Hindi. If in Marathi, reply in Marathi. "
-        "If the user uses slang or casual tone, match their vibe — be chill, not robotic. "
-        "Use bullet points or numbered lists when appropriate."
+        "All responses MUST be in English and use professional, formal language. "
+        "Ignore the user's tone or slang; do not match it. Use bullet points or numbered lists where appropriate for structured clarity."
     )
 
     user_prompt = (

@@ -152,12 +152,15 @@ def allowed_file(filename: str) -> bool:
 
 def extract_text_from_pdf(pdf_path: str) -> str:
     text = ""
-    with open(pdf_path, "rb") as f:
-        reader = PyPDF2.PdfReader(f)
-        for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
+    try:
+        with open(pdf_path, "rb") as f:
+            reader = PyPDF2.PdfReader(f)
+            for page in reader.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text + "\n"
+    except Exception as e:
+        logger.error(f"Error extracting text from PDF {pdf_path}: {e}")
     return text
 
 
@@ -227,16 +230,20 @@ def ask_llm(context: str, question: str) -> str:
         "Please answer the question based on the document context above."
     )
 
-    chat_completion = groq_client.chat.completions.create(
-        model=LLM_MODEL,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        temperature=LLM_TEMPERATURE,
-        max_tokens=LLM_MAX_TOKENS,
-    )
-    return chat_completion.choices[0].message.content
+    try:
+        chat_completion = groq_client.chat.completions.create(
+            model=LLM_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=LLM_TEMPERATURE,
+            max_tokens=LLM_MAX_TOKENS,
+        )
+        return chat_completion.choices[0].message.content
+    except Exception as e:
+        logger.error(f"Groq API error: {e}")
+        return "I'm sorry, I encountered an error while processing your request. Please try again later."
 
 
 
@@ -359,6 +366,10 @@ async def create_bot(
         db.add(new_bot)
         db.commit()
         return RedirectResponse("/dashboard", status_code=303)
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error creating bot: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create bot")
     finally:
         db.close()
 
@@ -478,12 +489,17 @@ async def upload_bot_pdf(request: Request, bot_id: int, file: UploadFile = File(
         db.commit()
         db.refresh(new_doc)
 
-        collection = index_pdf(bot.id, new_doc.id, file.filename, filepath)
+        try:
+            collection = index_pdf(bot.id, new_doc.id, file.filename, filepath)
+        except Exception as index_err:
+            logger.error(f"Indexing error: {index_err}")
+            # We keep the document record but it might not be indexed properly
         
         return RedirectResponse(f"/dashboard/bots/{bot_id}", status_code=303)
 
     except Exception as e:
-        print(f"Upload error: {e}", flush=True)
+        db.rollback()
+        logger.error(f"Upload error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.close()
@@ -505,17 +521,27 @@ async def delete_document(request: Request, bot_id: int, doc_id: int):
         if not doc or doc.bot.user_id != user.id:
             raise HTTPException(status_code=404, detail="Document not found")
 
-        collection = get_safe_collection(bot_id)
-        collection.delete(where={"doc_id": doc_id})
+        try:
+            collection = get_safe_collection(bot_id)
+            collection.delete(where={"doc_id": doc_id})
+        except Exception as chroma_err:
+            logger.error(f"ChromaDB deletion error: {chroma_err}")
 
         filepath = os.path.join(UPLOAD_FOLDER, doc.filename)
         if os.path.exists(filepath):
-            os.remove(filepath)
+            try:
+                os.remove(filepath)
+            except Exception as os_err:
+                logger.error(f"OS file removal error: {os_err}")
 
         db.delete(doc)
         db.commit()
 
         return RedirectResponse(f"/dashboard/bots/{bot_id}", status_code=303)
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error deleting document: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete document")
     finally:
         db.close()
 

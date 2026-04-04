@@ -41,7 +41,11 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(level
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+groq_api_key = os.environ.get("GROQ_API_KEY")
+if not groq_api_key:
+    logger.warning("GROQ_API_KEY not found in environment variables. LLM features will not work.")
+
+groq_client = Groq(api_key=groq_api_key)
 chroma_client = chromadb.PersistentClient(path="./chroma_db")
 
 embedding_fn = None

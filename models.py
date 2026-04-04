@@ -19,10 +19,12 @@ def get_db():
 
 
 def generate_api_key():
+    """Generates a unique API key for bots."""
     return uuid.uuid4().hex
 
 
 class User(Base):
+    """Represents a registered user in the system."""
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -34,6 +36,7 @@ class User(Base):
 
 
 class Bot(Base):
+    """Represents a RAG chatbot instance owned by a user."""
     __tablename__ = "bots"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -50,6 +53,7 @@ class Bot(Base):
 
 
 class Document(Base):
+    """Represents a PDF document uploaded and indexed for a specific bot."""
     __tablename__ = "documents"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -63,6 +67,7 @@ class Document(Base):
 
 
 class ChatLog(Base):
+    """Stores chat history and performance metrics for bot interactions."""
     __tablename__ = "chat_logs"
 
     id = Column(Integer, primary_key=True, autoincrement=True)

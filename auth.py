@@ -69,6 +69,11 @@ async def signup(request: Request, email: str = Form(...), password: str = Form(
 
         request.session["user_id"] = user.id
         return RedirectResponse("/dashboard", status_code=303)
+    except Exception as e:
+        db.rollback()
+        return templates.TemplateResponse("auth/signup.html", {
+            "request": request, "error": "An error occurred during signup. Please try again."
+        })
     finally:
         db.close()
 

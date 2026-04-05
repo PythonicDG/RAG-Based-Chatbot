@@ -23,7 +23,7 @@ from auth import router as auth_router, get_current_user
 
 load_dotenv()
 
-APP_VERSION = "1.3.0"
+APP_VERSION = "1.4.0"
 APP_START_TIME = time.time()
 
 UPLOAD_FOLDER = "uploads"
@@ -35,6 +35,30 @@ LLM_MODEL = os.environ.get("LLM_MODEL", "llama-3.1-8b-instant")
 EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", 0.3))
 LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", 1024))
+
+# ── Supported Languages ────────────────────────────────────────────────────────
+# Maps language codes to their display names and LLM instruction labels.
+# The key is sent by the widget, the value is used in the system prompt.
+SUPPORTED_LANGUAGES = {
+    "en": {"name": "English",    "instruction": "English"},
+    "hi": {"name": "Hindi",      "instruction": "Hindi (हिन्दी)"},
+    "mr": {"name": "Marathi",    "instruction": "Marathi (मराठी)"},
+    "ta": {"name": "Tamil",      "instruction": "Tamil (தமிழ்)"},
+    "te": {"name": "Telugu",     "instruction": "Telugu (తెలుగు)"},
+    "bn": {"name": "Bengali",    "instruction": "Bengali (বাংলা)"},
+    "gu": {"name": "Gujarati",   "instruction": "Gujarati (ગુજરાતી)"},
+    "kn": {"name": "Kannada",    "instruction": "Kannada (ಕನ್ನಡ)"},
+    "ml": {"name": "Malayalam",  "instruction": "Malayalam (മലയാളം)"},
+    "pa": {"name": "Punjabi",    "instruction": "Punjabi (ਪੰਜਾਬੀ)"},
+    "es": {"name": "Spanish",    "instruction": "Spanish (Español)"},
+    "fr": {"name": "French",     "instruction": "French (Français)"},
+    "de": {"name": "German",     "instruction": "German (Deutsch)"},
+    "zh": {"name": "Chinese",    "instruction": "Chinese (中文)"},
+    "ja": {"name": "Japanese",   "instruction": "Japanese (日本語)"},
+    "ar": {"name": "Arabic",     "instruction": "Arabic (العربية)"},
+    "pt": {"name": "Portuguese", "instruction": "Portuguese (Português)"},
+}
+DEFAULT_LANGUAGE = "en"
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -148,6 +172,7 @@ class WidgetChatRequest(BaseModel):
     message: str
     bot_id: int
     session_id: str = "default_session"
+    language: str = DEFAULT_LANGUAGE
 
 
 def allowed_file(filename: str) -> bool:
@@ -220,18 +245,47 @@ def retrieve_context(collection: chromadb.Collection, query: str, top_k: int = T
     return ""
 
 
-def ask_llm(context: str, question: str) -> str:
-    system_prompt = (
-        "You are a professional assistant that provides clear, concise, and business-appropriate answers based on the provided document context. "
-        "Use ONLY the information from the context to answer. "
-        "All responses MUST be in English and use professional, formal language. "
-        "Ignore the user's tone or slang; do not match it. Use bullet points or numbered lists where appropriate for structured clarity."
-    )
+def _get_language_instruction(lang_code: str) -> str:
+    """Resolve a language code to its LLM instruction label, with safe fallback."""
+    lang_code = (lang_code or DEFAULT_LANGUAGE).strip().lower()
+    lang_entry = SUPPORTED_LANGUAGES.get(lang_code)
+    if lang_entry:
+        return lang_entry["instruction"]
+    # Fallback: if someone sends a full name like "Hindi", attempt reverse lookup
+    for code, entry in SUPPORTED_LANGUAGES.items():
+        if entry["name"].lower() == lang_code:
+            return entry["instruction"]
+    return SUPPORTED_LANGUAGES[DEFAULT_LANGUAGE]["instruction"]
+
+
+def ask_llm(context: str, question: str, language: str = DEFAULT_LANGUAGE) -> str:
+    lang_label = _get_language_instruction(language)
+    is_english = language.strip().lower() in ("en", "english")
+
+    # Build a language-aware system prompt
+    if is_english:
+        system_prompt = (
+            "You are a professional assistant that provides clear, concise, and business-appropriate answers based on the provided document context. "
+            "Use ONLY the information from the context to answer. "
+            "All responses MUST be in English and use professional, formal language. "
+            "Ignore the user's tone or slang; do not match it. Use bullet points or numbered lists where appropriate for structured clarity."
+        )
+    else:
+        system_prompt = (
+            f"You are a professional assistant that provides clear, concise, and business-appropriate answers based on the provided document context. "
+            f"Use ONLY the information from the context to answer. "
+            f"CRITICAL INSTRUCTION: You MUST write your ENTIRE response in {lang_label}. "
+            f"Do NOT respond in English or any other language — use {lang_label} only. "
+            f"Even if the document context is in English, translate and present your answer in {lang_label}. "
+            f"Use professional and formal language appropriate for {lang_label}. "
+            f"Use bullet points or numbered lists where appropriate for structured clarity."
+        )
 
     user_prompt = (
         f"### Document Context\n{context}\n\n"
         f"### Question\n{question}\n\n"
-        "Please answer the question based on the document context above."
+        f"Please answer the question based on the document context above. "
+        f"Remember: respond ONLY in {lang_label}."
     )
 
     try:
@@ -247,7 +301,16 @@ def ask_llm(context: str, question: str) -> str:
         return chat_completion.choices[0].message.content
     except Exception as e:
         logger.error(f"Groq API error: {e}")
-        return "I'm sorry, I encountered an error while processing your request. Please try again later."
+        # Return error message in the requested language if possible
+        error_messages = {
+            "en": "I'm sorry, I encountered an error while processing your request. Please try again later.",
+            "hi": "क्षमा करें, आपके अनुरोध को संसाधित करने में एक त्रुटि हुई। कृपया बाद में पुनः प्रयास करें।",
+            "mr": "क्षमस्व, तुमची विनंती प्रक्रिया करताना त्रुटी आली. कृपया नंतर पुन्हा प्रयत्न करा.",
+            "es": "Lo siento, encontré un error al procesar su solicitud. Por favor, inténtelo de nuevo más tarde.",
+            "fr": "Désolé, une erreur s'est produite lors du traitement de votre demande. Veuillez réessayer plus tard.",
+            "de": "Es tut mir leid, bei der Verarbeitung Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+        }
+        return error_messages.get(language.strip().lower(), error_messages["en"])
 
 
 
@@ -558,11 +621,29 @@ async def widget_list_documents():
     }
 
 
+@app.get("/api/widget/languages")
+async def widget_languages():
+    """Returns all supported languages for the widget language selector."""
+    return {
+        "languages": [
+            {"code": code, "name": entry["name"]}
+            for code, entry in SUPPORTED_LANGUAGES.items()
+        ],
+        "default": DEFAULT_LANGUAGE,
+    }
+
+
 @app.post("/api/widget/chat")
 async def widget_chat(data: WidgetChatRequest):
     """Widget chat endpoint — external websites call this."""
     if not data.bot_id or not data.message.strip():
         raise HTTPException(status_code=400, detail="Please provide both a bot_id and a message.")
+
+    # Validate and normalize language with safe fallback
+    language = (data.language or DEFAULT_LANGUAGE).strip().lower()
+    if language not in SUPPORTED_LANGUAGES:
+        logger.warning(f"Unsupported language code '{data.language}' received, falling back to '{DEFAULT_LANGUAGE}'.")
+        language = DEFAULT_LANGUAGE
 
     try:
         collection = get_safe_collection(data.bot_id)
@@ -574,9 +655,17 @@ async def widget_chat(data: WidgetChatRequest):
         context = retrieve_context(collection, data.message.strip())
 
         if not context:
-            answer = "I couldn't find any relevant information in the document."
+            no_info_messages = {
+                "en": "I couldn't find any relevant information in the document.",
+                "hi": "मुझे दस्तावेज़ में कोई प्रासंगिक जानकारी नहीं मिली।",
+                "mr": "मला दस्तऐवजात कोणतीही संबंधित माहिती सापडली नाही.",
+                "es": "No pude encontrar información relevante en el documento.",
+                "fr": "Je n'ai trouvé aucune information pertinente dans le document.",
+                "de": "Ich konnte keine relevanten Informationen im Dokument finden.",
+            }
+            answer = no_info_messages.get(language, no_info_messages["en"])
         else:
-            answer = ask_llm(context, data.message.strip())
+            answer = ask_llm(context, data.message.strip(), language=language)
         
         db = SessionLocal()
         try:
@@ -585,14 +674,15 @@ async def widget_chat(data: WidgetChatRequest):
                 session_id=data.session_id,
                 user_message=data.message.strip(),
                 bot_response=answer,
-                response_time_ms=(time.time() - start_time) * 1000
+                response_time_ms=(time.time() - start_time) * 1000,
+                language=language,
             )
             db.add(log)
             db.commit()
         finally:
             db.close()
 
-        return {"response": answer}
+        return {"response": answer, "language": language}
 
     except Exception as e:
         import traceback

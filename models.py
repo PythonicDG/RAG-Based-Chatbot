@@ -76,6 +76,7 @@ class ChatLog(Base):
     user_message = Column(Text, nullable=False)
     bot_response = Column(Text, nullable=False)
     response_time_ms = Column(Float, nullable=True)
+    language = Column(String(10), default="en", nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     bot = relationship("Bot", back_populates="chat_logs")

@@ -153,6 +153,19 @@
             padding: 60px;
             color: rgba(255, 255, 255, 0.3);
         }
+
+        .lang-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(108, 99, 255, 0.15);
+            color: #a89bff;
+            border: 1px solid rgba(108, 99, 255, 0.25);
+        }
     </style>
 </head>
 
@@ -193,6 +206,7 @@
                     <tr>
                         <th width="150">Time / Session</th>
                         <th>Chat History</th>
+                        <th width="80">Lang</th>
                         <th width="100">Latency</th>
                     </tr>
                 </thead>
@@ -208,12 +222,13 @@
                             <div class="user-msg">User: {{ log.user_message }}</div>
                             <div class="bot-res">Bot: {{ log.bot_response }}</div>
                         </td>
+                        <td><span class="lang-badge">{{ log.language or 'en' }}</span></td>
                         <td class="timestamp">{{ log.response_time_ms | round(0) }}ms</td>
                     </tr>
                     {% endfor %}
                     {% else %}
                     <tr>
-                        <td colspan="3" class="no-data">No chat data available yet. Start chatting with your bot!</td>
+                        <td colspan="4" class="no-data">No chat data available yet. Start chatting with your bot!</td>
                     </tr>
                     {% endif %}
                 </tbody>

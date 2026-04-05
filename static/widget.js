@@ -18,6 +18,31 @@
     localStorage.setItem("rag_bot_session_id", SESSION_ID);
   }
 
+  // ── Language Management ────────────────────────────────────────────────────
+  // Hardcoded fallback in case the API is unreachable
+  const FALLBACK_LANGUAGES = [
+    { code: "en", name: "English" },
+    { code: "hi", name: "Hindi" },
+    { code: "mr", name: "Marathi" },
+    { code: "ta", name: "Tamil" },
+    { code: "te", name: "Telugu" },
+    { code: "bn", name: "Bengali" },
+    { code: "gu", name: "Gujarati" },
+    { code: "kn", name: "Kannada" },
+    { code: "ml", name: "Malayalam" },
+    { code: "pa", name: "Punjabi" },
+    { code: "es", name: "Spanish" },
+    { code: "fr", name: "French" },
+    { code: "de", name: "German" },
+    { code: "zh", name: "Chinese" },
+    { code: "ja", name: "Japanese" },
+    { code: "ar", name: "Arabic" },
+    { code: "pt", name: "Portuguese" },
+  ];
+
+  let availableLanguages = [...FALLBACK_LANGUAGES];
+  let selectedLanguage = localStorage.getItem(`rag_lang_${BOT_ID}`) || "en";
+
   // ── Inject styles ──────────────────────────────────────────────────────────
   const style = document.createElement("style");
   style.textContent = `
@@ -75,7 +100,7 @@
     /* Header */
     .rag-w-header {
       background: ${PRIMARY_COLOR};
-      padding: 16px 20px;
+      padding: 14px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -111,7 +136,7 @@
 
     .rag-w-actions {
       display: flex;
-      gap: 12px;
+      gap: 8px;
       align-items: center;
     }
     .rag-w-header-btn {
@@ -125,9 +150,112 @@
       display: flex;
       align-items: center;
       transition: opacity 0.2s;
+      position: relative;
     }
     .rag-w-header-btn:hover { opacity: 1; }
     .rag-w-header-btn svg { width: 16px; height: 16px; }
+
+    /* ── Language Selector ── */
+    .rag-w-lang-wrapper {
+      position: relative;
+    }
+    .rag-w-lang-btn {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+    .rag-w-lang-btn:hover {
+      background: rgba(255,255,255,0.25);
+      border-color: rgba(255,255,255,0.4);
+    }
+    .rag-w-lang-btn svg {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+    }
+    .rag-w-lang-btn .rag-w-lang-code {
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .rag-w-lang-btn .rag-w-lang-chevron {
+      width: 10px;
+      height: 10px;
+      transition: transform 0.2s;
+    }
+    .rag-w-lang-btn.open .rag-w-lang-chevron {
+      transform: rotate(180deg);
+    }
+
+    .rag-w-lang-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      width: 180px;
+      max-height: 220px;
+      background: #1e1e36;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      overflow-y: auto;
+      z-index: 100001;
+      padding: 4px;
+      display: none;
+      animation: rag-dropdown-in 0.15s ease-out;
+    }
+    .rag-w-lang-dropdown.visible { display: block; }
+
+    @keyframes rag-dropdown-in {
+      from { opacity: 0; transform: translateY(-6px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .rag-w-lang-dropdown::-webkit-scrollbar { width: 4px; }
+    .rag-w-lang-dropdown::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15);
+      border-radius: 4px;
+    }
+
+    .rag-w-lang-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      font-size: 12.5px;
+      color: #ccc;
+      cursor: pointer;
+      border-radius: 7px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .rag-w-lang-option:hover {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+    }
+    .rag-w-lang-option.active {
+      background: ${PRIMARY_COLOR}33;
+      color: #fff;
+      font-weight: 600;
+    }
+    .rag-w-lang-option .rag-w-lang-check {
+      width: 14px;
+      height: 14px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .rag-w-lang-option.active .rag-w-lang-check {
+      opacity: 1;
+      color: ${PRIMARY_COLOR};
+    }
 
     /* Messages area */
     .rag-w-messages {
@@ -180,6 +308,19 @@
       background: ${PRIMARY_COLOR};
       color: #fff;
       border-bottom-right-radius: 4px;
+    }
+
+    /* Language change notification */
+    .rag-w-msg.system {
+      align-self: center;
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.5);
+      font-size: 11.5px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      max-width: 90%;
+      text-align: center;
+      font-style: italic;
     }
 
     /* Typing indicator */
@@ -275,6 +416,12 @@
     </svg>`;
   document.body.appendChild(bubble);
 
+  // ── Helpers for language display ───────────────────────────────────────────
+  function getLangName(code) {
+    const lang = availableLanguages.find(l => l.code === code);
+    return lang ? lang.name : code.toUpperCase();
+  }
+
   // ── Create chat window ─────────────────────────────────────────────────────
   const win = document.createElement("div");
   win.id = "rag-widget-window";
@@ -287,6 +434,22 @@
         </div>
       </div>
       <div class="rag-w-actions">
+        <div class="rag-w-lang-wrapper">
+          <button class="rag-w-lang-btn" id="rag-w-lang-toggle" title="Change Language">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span class="rag-w-lang-code" id="rag-w-lang-label">${selectedLanguage.toUpperCase()}</span>
+            <svg class="rag-w-lang-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="rag-w-lang-dropdown" id="rag-w-lang-dropdown"></div>
+        </div>
         <button class="rag-w-header-btn" id="rag-w-clear" title="Clear Chat">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
                stroke-linecap="round" stroke-linejoin="round">
@@ -323,6 +486,98 @@
   const sendBtn = document.getElementById("rag-w-send");
   const clearBtn = document.getElementById("rag-w-clear");
   const closeBtn = win.querySelector(".rag-w-close");
+  const langToggle = document.getElementById("rag-w-lang-toggle");
+  const langDropdown = document.getElementById("rag-w-lang-dropdown");
+  const langLabel = document.getElementById("rag-w-lang-label");
+
+  // ── Language Dropdown Logic ────────────────────────────────────────────────
+  let langDropdownOpen = false;
+
+  function renderLanguageOptions() {
+    langDropdown.innerHTML = availableLanguages.map(lang => `
+      <div class="rag-w-lang-option ${lang.code === selectedLanguage ? 'active' : ''}" data-lang="${lang.code}">
+        <span>${lang.name}</span>
+        <svg class="rag-w-lang-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+    `).join("");
+
+    // Attach listeners
+    langDropdown.querySelectorAll(".rag-w-lang-option").forEach(opt => {
+      opt.addEventListener("click", () => {
+        const newLang = opt.getAttribute("data-lang");
+        if (newLang && newLang !== selectedLanguage) {
+          const oldName = getLangName(selectedLanguage);
+          const newName = getLangName(newLang);
+          selectedLanguage = newLang;
+          localStorage.setItem(`rag_lang_${BOT_ID}`, selectedLanguage);
+          langLabel.textContent = selectedLanguage.toUpperCase();
+          renderLanguageOptions();
+
+          // Add a system notification
+          addSystemMessage(`Language changed: ${oldName} → ${newName}`);
+        }
+        closeLangDropdown();
+      });
+    });
+  }
+
+  function openLangDropdown() {
+    langDropdownOpen = true;
+    langDropdown.classList.add("visible");
+    langToggle.classList.add("open");
+  }
+
+  function closeLangDropdown() {
+    langDropdownOpen = false;
+    langDropdown.classList.remove("visible");
+    langToggle.classList.remove("open");
+  }
+
+  langToggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (langDropdownOpen) {
+      closeLangDropdown();
+    } else {
+      openLangDropdown();
+    }
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener("click", (e) => {
+    if (langDropdownOpen && !langDropdown.contains(e.target) && e.target !== langToggle) {
+      closeLangDropdown();
+    }
+  });
+
+  // ── Fetch languages from server (non-blocking) ────────────────────────────
+  async function fetchLanguages() {
+    try {
+      const res = await fetch(`${API_URL}/api/widget/languages`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.languages && data.languages.length > 0) {
+          availableLanguages = data.languages;
+          // Validate persisted language against server list
+          if (!availableLanguages.find(l => l.code === selectedLanguage)) {
+            selectedLanguage = data.default || "en";
+            localStorage.setItem(`rag_lang_${BOT_ID}`, selectedLanguage);
+            langLabel.textContent = selectedLanguage.toUpperCase();
+          }
+          renderLanguageOptions();
+        }
+      }
+    } catch (err) {
+      // Silently fall back to hardcoded list
+      console.warn("RAG Widget: Could not fetch languages, using defaults.");
+    }
+  }
+
+  // Initialize options and fetch from server
+  renderLanguageOptions();
+  fetchLanguages();
 
   // ── Toggle open/close ──────────────────────────────────────────────────────
   let isOpen = false;
@@ -342,6 +597,7 @@
   closeBtn.addEventListener("click", () => {
     isOpen = false;
     win.classList.remove("open");
+    closeLangDropdown();
   });
 
   // ── Markdown Parser (Lightweight) ──────────────────────────────────────────
@@ -378,11 +634,33 @@
     return el;
   }
 
+  function addSystemMessage(text) {
+    const el = document.createElement("div");
+    el.className = "rag-w-msg system";
+    el.textContent = text;
+    messagesEl.appendChild(el);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    // Save to history so it persists across reloads
+    const history = JSON.parse(localStorage.getItem(`rag_history_${BOT_ID}`) || "[]");
+    history.push({ text, sender: "system" });
+    localStorage.setItem(`rag_history_${BOT_ID}`, JSON.stringify(history));
+  }
+
   function loadHistory() {
     const history = JSON.parse(localStorage.getItem(`rag_history_${BOT_ID}`) || "[]");
     if (history.length > 0) {
       welcomed = true;
-      history.forEach(msg => addMessage(msg.text, msg.sender, false));
+      history.forEach(msg => {
+        if (msg.sender === "system") {
+          const el = document.createElement("div");
+          el.className = "rag-w-msg system";
+          el.textContent = msg.text;
+          messagesEl.appendChild(el);
+        } else {
+          addMessage(msg.text, msg.sender, false);
+        }
+      });
     }
   }
 
@@ -422,7 +700,8 @@
         body: JSON.stringify({
           bot_id: parseInt(BOT_ID),
           message: text,
-          session_id: SESSION_ID
+          session_id: SESSION_ID,
+          language: selectedLanguage
         }),
       });
       const data = await res.json();

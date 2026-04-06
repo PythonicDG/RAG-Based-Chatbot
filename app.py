@@ -698,11 +698,11 @@ async def widget_chat(data: WidgetChatRequest):
 
     except Exception as e:
         import traceback
-        print(f"Widget chat error: {e}", flush=True)
+        logger.error(f"Widget chat error: {e}", exc_info=True)
         traceback.print_exc()
         raise HTTPException(
             status_code=500,
-            detail="Sorry, an error occurred on the server. Please check the logs.",
+            detail=f"Server error: {str(e)}",
         )
 
 

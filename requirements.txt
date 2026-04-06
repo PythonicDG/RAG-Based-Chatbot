@@ -4,6 +4,7 @@ sentence-transformers
 # Other dependencies
 fastapi
 uvicorn[standard]
+gunicorn
 python-multipart
 groq
 chromadb==0.4.24

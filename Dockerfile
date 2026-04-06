@@ -21,5 +21,5 @@ COPY . .
 # Expose the port the app runs on (Railway's default is 5001 or 8080)
 EXPOSE 5001
 
-# Command to run the application using a hardcoded port for maximum reliability on the free plan
-CMD uvicorn app:app --host 0.0.0.0 --port 5001
+# Command to run the application using Gunicorn for production stability
+CMD gunicorn -w 1 -k uvicorn.workers.UvicornWorker app:app --bind 0.0.0.0:8000

@@ -14,3 +14,4 @@ jinja2
 sqlalchemy
 werkzeug
 itsdangerous
+numpy<2.0

@@ -21,5 +21,5 @@ COPY . .
 # Expose the port the app runs on (Railway's default is 5001 or 8080)
 EXPOSE 5001
 
-# Command to run the application, using Railway's PORT environment variable or defaulting to 5001
-CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port ${PORT:-5001}"]
+# Command to run the application using the shell form for direct environment variable expansion
+CMD uvicorn app:app --host 0.0.0.0 --port ${PORT:-5001}

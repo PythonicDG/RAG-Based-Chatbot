@@ -13,3 +13,4 @@ python-dotenv
 jinja2
 sqlalchemy
 werkzeug
+itsdangerous

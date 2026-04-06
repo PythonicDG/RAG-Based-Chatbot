@@ -1,1 +1,1 @@
-web: uvicorn app:app --host 0.0.0.0 --port ${PORT:-5001} --timeout-keep-alive 120 --workers 1
+web: python app.py

@@ -696,4 +696,7 @@ async def widget_chat(data: WidgetChatRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="127.0.0.1", port=int(os.environ.get("PORT", 5001)), reload=True)
+    # Use 0.0.0.0 so the app is accessible outside the container
+    # Use Railway's/Heroku's PORT env variable, or default to 5001
+    port = int(os.environ.get("PORT", 5001))
+    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=False)

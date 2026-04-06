@@ -69,8 +69,13 @@ groq_api_key = os.environ.get("GROQ_API_KEY")
 if not groq_api_key:
     logger.warning("GROQ_API_KEY not found in environment variables. LLM features will not work.")
 
+from chromadb.config import Settings
+
 groq_client = Groq(api_key=groq_api_key)
-chroma_client = chromadb.PersistentClient(path="./chroma_db")
+chroma_client = chromadb.PersistentClient(
+    path="./chroma_db",
+    settings=Settings(anonymized_telemetry=False)
+)
 
 embedding_fn = None
 embedding_ready = threading.Event()

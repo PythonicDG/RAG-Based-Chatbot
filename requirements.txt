@@ -1,9 +1,12 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+sentence-transformers
+# Other dependencies
 fastapi
 uvicorn[standard]
 python-multipart
 groq
-chromadb==0.5.23
-sentence-transformers
+chromadb==0.4.24
 PyPDF2
 python-dotenv
 jinja2

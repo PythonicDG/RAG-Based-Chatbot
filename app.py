@@ -698,4 +698,4 @@ if __name__ == "__main__":
     import uvicorn
     # Use 0.0.0.0 so the app is accessible outside the container
     # Use Railway's/Heroku's PORT env variable, or default to 5001
-    uvicorn.run("app:app", host="0.0.0.0", port=5001, reload=False)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=False)

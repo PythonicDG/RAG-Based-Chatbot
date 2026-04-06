@@ -36,28 +36,34 @@ async def signup_page(request: Request):
     user = get_current_user(request)
     if user:
         return RedirectResponse("/dashboard", status_code=303)
-    return templates.TemplateResponse("auth/signup.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="auth/signup.html")
 
 
 @router.post("/signup", response_class=HTMLResponse)
 async def signup(request: Request, email: str = Form(...), password: str = Form(...), confirm_password: str = Form(...)):
     if password != confirm_password:
-        return templates.TemplateResponse("auth/signup.html", {
-            "request": request, "error": "Passwords do not match"
-        })
+        return templates.TemplateResponse(
+            request=request,
+            name="auth/signup.html",
+            context={"error": "Passwords do not match"}
+        )
 
     if len(password) < 6:
-        return templates.TemplateResponse("auth/signup.html", {
-            "request": request, "error": "Password must be at least 6 characters"
-        })
+        return templates.TemplateResponse(
+            request=request,
+            name="auth/signup.html",
+            context={"error": "Password must be at least 6 characters"}
+        )
 
     db = SessionLocal()
     try:
         existing = db.query(User).filter(User.email == email).first()
         if existing:
-            return templates.TemplateResponse("auth/signup.html", {
-                "request": request, "error": "Email already registered"
-            })
+            return templates.TemplateResponse(
+                request=request,
+                name="auth/signup.html",
+                context={"error": "Email already registered"}
+            )
 
         user = User(
             email=email,
@@ -71,9 +77,11 @@ async def signup(request: Request, email: str = Form(...), password: str = Form(
         return RedirectResponse("/dashboard", status_code=303)
     except Exception as e:
         db.rollback()
-        return templates.TemplateResponse("auth/signup.html", {
-            "request": request, "error": "An error occurred during signup. Please try again."
-        })
+        return templates.TemplateResponse(
+            request=request,
+            name="auth/signup.html",
+            context={"error": "An error occurred during signup. Please try again."}
+        )
     finally:
         db.close()
 
@@ -83,7 +91,7 @@ async def login_page(request: Request):
     user = get_current_user(request)
     if user:
         return RedirectResponse("/dashboard", status_code=303)
-    return templates.TemplateResponse("auth/login.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="auth/login.html")
 
 
 @router.post("/login", response_class=HTMLResponse)
@@ -92,9 +100,11 @@ async def login(request: Request, email: str = Form(...), password: str = Form(.
     try:
         user = db.query(User).filter(User.email == email).first()
         if not user or not check_password_hash(user.password_hash, password):
-            return templates.TemplateResponse("auth/login.html", {
-                "request": request, "error": "Invalid email or password"
-            })
+            return templates.TemplateResponse(
+                request=request,
+                name="auth/login.html",
+                context={"error": "Invalid email or password"}
+            )
 
         request.session["user_id"] = user.id
         return RedirectResponse("/dashboard", status_code=303)

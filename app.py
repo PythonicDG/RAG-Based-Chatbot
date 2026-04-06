@@ -392,13 +392,16 @@ async def dashboard(request: Request):
             ChatLog.bot_id.in_([b.id for b in bots])
         ).count() if bots else 0
 
-        return templates.TemplateResponse("dashboard/home.html", {
-            "request": request,
-            "user": user,
-            "bots": bots,
-            "total_docs": total_docs,
-            "total_chats": total_chats,
-        })
+        return templates.TemplateResponse(
+            request=request,
+            name="dashboard/home.html",
+            context={
+                "user": user,
+                "bots": bots,
+                "total_docs": total_docs,
+                "total_chats": total_chats,
+            }
+        )
     finally:
         db.close()
 
@@ -408,7 +411,7 @@ async def create_bot_page(request: Request):
     user = get_current_user(request)
     if not user:
         return RedirectResponse("/auth/login", status_code=303)
-    return templates.TemplateResponse("dashboard/create_bot.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request=request, name="dashboard/create_bot.html", context={"user": user})
 
 
 @app.post("/dashboard/bots/new")
@@ -453,11 +456,11 @@ async def bot_details(request: Request, bot_id: int):
         if not bot:
             raise HTTPException(status_code=404, detail="Bot not found")
         
-        return templates.TemplateResponse("dashboard/bot_details.html", {
-            "request": request,
-            "user": user,
-            "bot": bot
-        })
+        return templates.TemplateResponse(
+            request=request,
+            name="dashboard/bot_details.html",
+            context={"bot": bot}
+        )
     finally:
         db.close()
 
@@ -476,12 +479,14 @@ async def bot_embed(request: Request, bot_id: int):
         
         server_url = f"{request.url.scheme}://{request.url.netloc}"
         
-        return templates.TemplateResponse("dashboard/embed.html", {
-            "request": request,
-            "user": user,
-            "bot": bot,
-            "server_url": server_url
-        })
+        return templates.TemplateResponse(
+            request=request,
+            name="dashboard/embed.html",
+            context={
+                "bot": bot,
+                "server_url": server_url
+            }
+        )
     finally:
         db.close()
 
@@ -508,15 +513,17 @@ async def bot_analytics(request: Request, bot_id: int):
             from sqlalchemy import func
             avg_response_time = db.query(func.avg(ChatLog.response_time_ms)).filter(ChatLog.bot_id == bot_id).scalar() or 0
             
-        return templates.TemplateResponse("dashboard/analytics.html", {
-            "request": request,
-            "user": user,
-            "bot": bot,
-            "logs": logs,
-            "total_messages": total_messages,
-            "unique_sessions": unique_sessions,
-            "avg_response_time": avg_response_time
-        })
+        return templates.TemplateResponse(
+            request=request,
+            name="dashboard/analytics.html",
+            context={
+                "bot": bot,
+                "logs": logs,
+                "total_messages": total_messages,
+                "unique_sessions": unique_sessions,
+                "avg_response_time": avg_response_time
+            }
+        )
     finally:
         db.close()
 

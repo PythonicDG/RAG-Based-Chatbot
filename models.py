@@ -84,5 +84,22 @@ class ChatLog(Base):
 
 def init_db():
     import os
+    import sqlite3
     os.makedirs("instance", exist_ok=True)
     Base.metadata.create_all(engine)
+    
+    # Auto-migration: Check and add missing columns for existing SQLite databases
+    if "sqlite" in DATABASE_URL:
+        db_path = DATABASE_URL.replace("sqlite:///", "")
+        if os.path.exists(db_path):
+            try:
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                cursor.execute("PRAGMA table_info(chat_logs)")
+                columns = [column[1] for column in cursor.fetchall()]
+                if "language" not in columns:
+                    cursor.execute("ALTER TABLE chat_logs ADD COLUMN language TEXT DEFAULT 'en'")
+                conn.commit()
+                conn.close()
+            except Exception:
+                pass

@@ -212,6 +212,18 @@ def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVE
 
 
 def index_pdf(bot_id: int, doc_id: int, filename: str, pdf_path: str) -> chromadb.Collection:
+    """
+    Extracts text from a PDF, chunks it, and adds it to the ChromaDB collection for a specific bot.
+    
+    Args:
+        bot_id (int): The ID of the bot.
+        doc_id (int): The ID of the document record in the database.
+        filename (str): The original filename of the PDF.
+        pdf_path (str): The local path to the uploaded PDF file.
+        
+    Returns:
+        chromadb.Collection: The updated ChromaDB collection.
+    """
     collection_name = f"bot_{bot_id}"
     
     collection = get_safe_collection(bot_id)
@@ -237,6 +249,17 @@ def index_pdf(bot_id: int, doc_id: int, filename: str, pdf_path: str) -> chromad
 
 
 def retrieve_context(collection: chromadb.Collection, query: str, top_k: int = TOP_K) -> str:
+    """
+    Retrieves the most relevant document chunks from the ChromaDB collection for a given query.
+    
+    Args:
+        collection (chromadb.Collection): The ChromaDB collection to query.
+        query (str): The user's message/query.
+        top_k (int): Number of chunks to retrieve.
+        
+    Returns:
+        str: Concatenated text of the most relevant chunks.
+    """
     count = collection.count()
     if count == 0:
         return ""
@@ -264,6 +287,17 @@ def _get_language_instruction(lang_code: str) -> str:
 
 
 def ask_llm(context: str, question: str, language: str = DEFAULT_LANGUAGE) -> str:
+    """
+    Generates a response from the LLM based on the provided context and question.
+    
+    Args:
+        context (str): The retrieved document context.
+        question (str): The user's question.
+        language (str): The target language for the response.
+        
+    Returns:
+        str: The LLM-generated response.
+    """
     lang_label = _get_language_instruction(language)
     is_english = language.strip().lower() in ("en", "english")
 

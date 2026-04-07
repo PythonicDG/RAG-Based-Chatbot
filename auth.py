@@ -6,8 +6,10 @@ from starlette.requests import Request
 
 from models import SessionLocal, User
 
+import logging
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
+logger = logging.getLogger(__name__)
 
 
 def get_current_user(request: Request):
@@ -72,11 +74,13 @@ async def signup(request: Request, email: str = Form(...), password: str = Form(
         db.add(user)
         db.commit()
         db.refresh(user)
+        logger.info(f"New user registered: {email}")
 
         request.session["user_id"] = user.id
         return RedirectResponse("/dashboard", status_code=303)
     except Exception as e:
         db.rollback()
+        logger.error(f"Signup error for user {email}: {e}")
         return templates.TemplateResponse(
             request=request,
             name="auth/signup.html",
@@ -100,12 +104,14 @@ async def login(request: Request, email: str = Form(...), password: str = Form(.
     try:
         user = db.query(User).filter(User.email == email).first()
         if not user or not check_password_hash(user.password_hash, password):
+            logger.warning(f"Failed login attempt for email: {email}")
             return templates.TemplateResponse(
                 request=request,
                 name="auth/login.html",
                 context={"error": "Invalid email or password"}
             )
 
+        logger.info(f"User logged in: {email}")
         request.session["user_id"] = user.id
         return RedirectResponse("/dashboard", status_code=303)
     finally:

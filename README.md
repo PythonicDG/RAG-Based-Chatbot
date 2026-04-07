@@ -25,6 +25,27 @@
 
 ---
 
+## 🛠️ Tech Stack
+
+- **Backend**: FastAPI (Python 3.10+)
+- **Database**: SQLite (SQLAlchemy ORM)
+- **Vector Store**: ChromaDB
+- **LLM API**: Groq (Llama 3.1)
+- **Embeddings**: Sentence-Transformers (Local)
+- **Frontend**: Vanilla Javascript (Widget), Jinja2 (Dashboard)
+
+---
+|---|---|
+| 🧠 **Multi-Tenant RAG** | Create multiple bots; each maintains its own isolated document collection and vector store. |
+| 📄 **Advanced Ingestion** | Efficient PDF extraction and semantic chunking with local embedding models (MiniLM-L6-v2). |
+| 🔐 **Enterprise Auth** | Secure signup/login system with session-based persistence and password hashing. |
+| 📊 **Actionable Analytics** | Real-time tracking of message counts, unique sessions, and average response latency. |
+| 🌐 **Seamless Embedding** | Lightweight, high-performance JS widget with Markdown support and history persistence. |
+| 🛠️ **Admin Dashboard** | Full-featured control panel to manage bots, upload docs, and view performance metrics. |
+| 🏥 **Health Monitoring** | Detailed system health and statistics endpoints (`/health/detailed`). |
+
+---
+
 ## 🏗️ Architecture
 
 The platform is designed for scalability and performance, combining high-speed retrieval with low-latency LLM inference.

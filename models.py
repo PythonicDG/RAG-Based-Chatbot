@@ -24,7 +24,10 @@ def generate_api_key():
 
 
 class User(Base):
-    """Represents a registered user in the system."""
+    """
+    Represents a registered user who can create and manage their own chatbots.
+    Stored in the 'users' table.
+    """
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -32,11 +35,15 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    # Relationship: A user can own multiple chatbots.
     bots = relationship("Bot", back_populates="owner", cascade="all, delete-orphan")
 
 
 class Bot(Base):
-    """Represents a RAG chatbot instance owned by a user."""
+    """
+    Represents an individual chatbot instance with its own configuration and document store.
+    Stored in the 'bots' table.
+    """
     __tablename__ = "bots"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -47,38 +54,47 @@ class Bot(Base):
     api_key = Column(String(64), unique=True, default=generate_api_key, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    # Relationships
     owner = relationship("User", back_populates="bots")
     documents = relationship("Document", back_populates="bot", cascade="all, delete-orphan")
     chat_logs = relationship("ChatLog", back_populates="bot", cascade="all, delete-orphan")
 
 
 class Document(Base):
-    """Represents a PDF document uploaded and indexed for a specific bot."""
+    """
+    Represents a PDF document that has been uploaded and processed for a specific bot.
+    Stored in the 'documents' table.
+    """
     __tablename__ = "documents"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     bot_id = Column(Integer, ForeignKey("bots.id"), nullable=False)
-    filename = Column(String(255), nullable=False)
-    original_name = Column(String(255), nullable=False)
+    filename = Column(String(255), nullable=False) # The unique filename on disk
+    original_name = Column(String(255), nullable=False) # The original filename provided by the user
     chunk_count = Column(Integer, default=0)
     uploaded_at = Column(DateTime, default=datetime.utcnow)
 
+    # Relationship to the parent bot
     bot = relationship("Bot", back_populates="documents")
 
 
 class ChatLog(Base):
-    """Stores chat history and performance metrics for bot interactions."""
+    """
+    Stores individual chat messages, responses, and performance telemetry.
+    Stored in the 'chat_logs' table.
+    """
     __tablename__ = "chat_logs"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     bot_id = Column(Integer, ForeignKey("bots.id"), nullable=False)
-    session_id = Column(String(64), nullable=True)
+    session_id = Column(String(64), nullable=True) # Used to track conversations across messages
     user_message = Column(Text, nullable=False)
     bot_response = Column(Text, nullable=False)
-    response_time_ms = Column(Float, nullable=True)
-    language = Column(String(10), default="en", nullable=True)
+    response_time_ms = Column(Float, nullable=True) # Performance tracking (latency)
+    language = Column(String(10), default="en", nullable=True) # The language code used for the chat
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    # Relationship to the parent bot
     bot = relationship("Bot", back_populates="chat_logs")
 
 

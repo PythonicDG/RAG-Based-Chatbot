@@ -43,6 +43,15 @@ async def signup_page(request: Request):
 
 @router.post("/signup", response_class=HTMLResponse)
 async def signup(request: Request, email: str = Form(...), password: str = Form(...), confirm_password: str = Form(...)):
+    import re
+    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_regex, email):
+        return templates.TemplateResponse(
+            request=request,
+            name="auth/signup.html",
+            context={"error": "Invalid email address format"}
+        )
+
     if password != confirm_password:
         return templates.TemplateResponse(
             request=request,

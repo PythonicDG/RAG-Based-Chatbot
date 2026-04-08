@@ -233,6 +233,7 @@ def index_pdf(bot_id: int, doc_id: int, filename: str, pdf_path: str) -> chromad
     chunks = chunk_text(text)
 
     if not chunks:
+        logger.warning(f"No text extracted or chunks created for bot {bot_id}, document {doc_id} ({filename})")
         return collection
 
     collection.add(

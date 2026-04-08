@@ -22,4 +22,5 @@ COPY . .
 EXPOSE 5001
 
 # Command to run the application using Gunicorn for production stability
+# Note: Port 8000 is used internally; mapping might change depending on host
 CMD gunicorn -w 1 -k uvicorn.workers.UvicornWorker app:app --bind 0.0.0.0:8000

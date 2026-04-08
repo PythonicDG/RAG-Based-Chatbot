@@ -59,6 +59,17 @@ class Bot(Base):
     documents = relationship("Document", back_populates="bot", cascade="all, delete-orphan")
     chat_logs = relationship("ChatLog", back_populates="bot", cascade="all, delete-orphan")
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "welcome_message": self.welcome_message,
+            "primary_color": self.primary_color,
+            "api_key": self.api_key,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "document_count": len(self.documents)
+        }
+
 
 class Document(Base):
     """

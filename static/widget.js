@@ -709,7 +709,16 @@
       addMessage(data.response || data.detail || "No response.", "bot");
     } catch (err) {
       typingEl.remove();
-      addMessage("Sorry, something went wrong. Please try again.", "bot");
+      const errMsg = addMessage("Something went wrong. ", "bot");
+      const retryBtn = document.createElement("button");
+      retryBtn.textContent = "Retry";
+      retryBtn.style.cssText = "background:none; border:1px solid currentColor; color:inherit; padding:2px 8px; border-radius:4px; margin-left:8px; cursor:pointer; font-size:11px;";
+      retryBtn.onclick = () => {
+        errMsg.remove();
+        inputEl.value = text;
+        sendMessage();
+      };
+      errMsg.appendChild(retryBtn);
     }
 
     sendBtn.disabled = false;

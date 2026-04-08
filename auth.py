@@ -69,6 +69,7 @@ async def signup(request: Request, email: str = Form(...), password: str = Form(
 
         user = User(
             email=email,
+            # Generate a secure hash using pbkdf2:sha256 (default in Werkzeug)
             password_hash=generate_password_hash(password),
         )
         db.add(user)

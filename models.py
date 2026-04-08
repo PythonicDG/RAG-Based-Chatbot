@@ -101,6 +101,7 @@ class ChatLog(Base):
 def init_db():
     import os
     import sqlite3
+    # Ensure the instance directory exists for the SQLite database file
     os.makedirs("instance", exist_ok=True)
     Base.metadata.create_all(engine)
     

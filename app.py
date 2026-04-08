@@ -180,6 +180,7 @@ class WidgetChatRequest(BaseModel):
     language: str = DEFAULT_LANGUAGE
 
 
+# Helper to check if the uploaded file has a permitted extension
 def allowed_file(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 

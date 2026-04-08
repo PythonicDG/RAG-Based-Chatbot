@@ -176,6 +176,16 @@ Replace `YOUR_BOT_ID` with the ID from your bot's dashboard. Replace `localhost:
 
 ---
 
+## ☁️ Deployment
+
+The application is containerized and compatible with modern cloud platforms:
+
+- **Docker**: Build and run locally or on any cloud VPS.
+- **Railway/Render**: Native support for FastAPI/Uvicorn.
+- **Vercel**: Can be deployed with appropriate adaptations for serverless functions.
+
+---
+
 ## 📜 License
 
 Distributed under the **MIT License**. See `LICENSE` for more information.

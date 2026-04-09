@@ -7,6 +7,10 @@ from starlette.requests import Request
 from models import SessionLocal, User
 
 import logging
+"""
+Authentication module handling user registration, login, and session management.
+Provides routes for signup, secure login with hashed passwords, and logout.
+"""
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 logger = logging.getLogger(__name__)

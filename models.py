@@ -3,6 +3,8 @@ from datetime import datetime
 from sqlalchemy import create_engine, Column, String, Integer, Float, DateTime, Text, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
+# Default SQLite database for local development and small deployments.
+# For specialized high-scale environments, consider migrating to PostgreSQL.
 DATABASE_URL = "sqlite:///instance/app.db"
 
 engine = create_engine(DATABASE_URL, echo=False)

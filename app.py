@@ -156,6 +156,12 @@ async def lifespan(app: FastAPI):
 
 
 
+"""
+Main application entry point for the RAG-Based Chatbot SaaS platform.
+This module initializes the FastAPI application, mounts static files, 
+sets up routes, and manages the lifespan of the application including 
+database and embedding model loading.
+"""
 app = FastAPI(title="RAG Chatbot", lifespan=lifespan)
 
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get("SECRET_KEY", "super-secret-change-me-in-prod"))

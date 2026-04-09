@@ -1,6 +1,6 @@
 # 🤖 RAG-Based-Chatbot — SaaS Platform
 
-[![Version](https://img.shields.io/badge/Version-1.3.0-blue?style=for-the-badge)](https://github.com/PythonicDG/RAG-Based-Chatbot)
+[![Version](https://img.shields.io/badge/Version-1.4.1-blue?style=for-the-badge)](https://github.com/PythonicDG/RAG-Based-Chatbot)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
 [![ChromaDB](https://img.shields.io/badge/ChromaDB-00D3FF?style=for-the-badge&logo=chromadb&logoColor=black)](https://www.trychroma.com)
@@ -8,6 +8,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 > A production-ready, multi-tenant chatbot platform powered by **Retrieval-Augmented Generation (RAG)**. Securely upload documents, create specialized AI bots, and embed them anywhere with a single line of code.
+
+*Last Updated: April 2026*
 
 ---
 

@@ -131,7 +131,7 @@ async def login(request: Request, email: str = Form(...), password: str = Form(.
     finally:
         db.close()
 
-
+#logout api
 @router.get("/logout")
 async def logout(request: Request):
     request.session.clear()

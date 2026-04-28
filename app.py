@@ -37,7 +37,7 @@ LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", 0.3))
 LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", 1024))
 
 
-# Maps language codes to their display names and LLM instruction labels.
+
 # The key is sent by the widget, the value is used in the system prompt.
 SUPPORTED_LANGUAGES = {
     "en": {"name": "English",    "instruction": "English"},

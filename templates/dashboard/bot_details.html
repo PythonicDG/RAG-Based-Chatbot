@@ -86,26 +86,14 @@
             width: 48px;
             height: 48px;
             border-radius: 12px;
-
-            background: {
-                    {
-                    bot.primary_color
-                }
-            }
-
-            ;
+            background: #6C63FF;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-
-            box-shadow: 0 0 16px {
-                    {
-                    bot.primary_color
-                }
-            }
-
-            33;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 0 16px rgba(108, 99, 255, 0.28);
         }
 
         .header-section h1 {
@@ -350,7 +338,7 @@
     <div class="main">
         <div class="header-section">
             <div class="header-left">
-                <div class="bot-icon">🤖</div>
+                <div class="bot-icon" style="background: {{ bot.primary_color }};">AI</div>
                 <div>
                     <h1>{{ bot.name }}</h1>
                     <p class="subtitle">API Key: <code>{{ bot.api_key }}</code></p>

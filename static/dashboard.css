@@ -135,6 +135,42 @@ textarea:focus-visible {
         border-radius: 14px;
         padding: 22px;
     }
+
+    .responsive-table table,
+    .responsive-table thead,
+    .responsive-table tbody,
+    .responsive-table tr,
+    .responsive-table th,
+    .responsive-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .responsive-table thead {
+        display: none;
+    }
+
+    .responsive-table tr {
+        padding: 14px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .responsive-table td {
+        display: grid;
+        grid-template-columns: 7rem 1fr;
+        gap: 12px;
+        padding: 8px 0;
+        border-top: 0;
+    }
+
+    .responsive-table td::before {
+        content: attr(data-label);
+        color: rgba(255, 255, 255, 0.42);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
 }
 
 @media (max-width: 560px) {

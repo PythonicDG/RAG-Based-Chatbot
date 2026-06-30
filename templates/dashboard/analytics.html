@@ -201,7 +201,7 @@
             </div>
         </div>
 
-        <div class="log-table-container">
+        <div class="log-table-container responsive-table">
             <table>
                 <thead>
                     <tr>
@@ -215,16 +215,16 @@
                     {% if logs %}
                     {% for log in logs %}
                     <tr>
-                        <td>
+                        <td data-label="Time">
                             <div class="timestamp">{{ log.created_at.strftime('%m-%d %H:%M') }}</div>
                             <div class="session-id">{{ log.session_id }}</div>
                         </td>
-                        <td>
+                        <td data-label="Chat">
                             <div class="user-msg">User: {{ log.user_message }}</div>
                             <div class="bot-res">Bot: {{ log.bot_response }}</div>
                         </td>
-                        <td><span class="lang-badge">{{ log.language or 'en' }}</span></td>
-                        <td class="timestamp">{{ log.response_time_ms | round(0) }}ms</td>
+                        <td data-label="Lang"><span class="lang-badge">{{ log.language or 'en' }}</span></td>
+                        <td data-label="Latency" class="timestamp">{{ log.response_time_ms | round(0) }}ms</td>
                     </tr>
                     {% endfor %}
                     {% else %}

@@ -409,6 +409,9 @@
   // ── Create chat bubble button ──────────────────────────────────────────────
   const bubble = document.createElement("button");
   bubble.id = "rag-widget-bubble";
+  bubble.setAttribute("aria-label", `Open ${BOT_NAME}`);
+  bubble.setAttribute("aria-expanded", "false");
+  bubble.setAttribute("aria-controls", "rag-widget-window");
   bubble.innerHTML = `
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
          stroke-linecap="round" stroke-linejoin="round">
@@ -425,6 +428,8 @@
   // ── Create chat window ─────────────────────────────────────────────────────
   const win = document.createElement("div");
   win.id = "rag-widget-window";
+  win.setAttribute("role", "dialog");
+  win.setAttribute("aria-label", BOT_NAME);
   win.innerHTML = `
     <div class="rag-w-header">
       <div class="rag-w-header-left">
@@ -435,7 +440,7 @@
       </div>
       <div class="rag-w-actions">
         <div class="rag-w-lang-wrapper">
-          <button class="rag-w-lang-btn" id="rag-w-lang-toggle" title="Change Language">
+          <button class="rag-w-lang-btn" id="rag-w-lang-toggle" title="Change Language" aria-label="Change language" aria-expanded="false">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                  stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"/>
@@ -450,14 +455,14 @@
           </button>
           <div class="rag-w-lang-dropdown" id="rag-w-lang-dropdown"></div>
         </div>
-        <button class="rag-w-header-btn" id="rag-w-clear" title="Clear Chat">
+        <button class="rag-w-header-btn" id="rag-w-clear" title="Clear Chat" aria-label="Clear chat">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
                stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"></polyline>
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
           </svg>
         </button>
-        <button class="rag-w-header-btn rag-w-close" title="Close">
+        <button class="rag-w-header-btn rag-w-close" title="Close" aria-label="Close chat">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"/>
@@ -469,7 +474,7 @@
     <div class="rag-w-messages" id="rag-w-messages"></div>
     <div class="rag-w-input-area">
       <input type="text" id="rag-w-input" placeholder="Type your message..." autocomplete="off" />
-      <button id="rag-w-send">
+      <button id="rag-w-send" aria-label="Send message">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round">
           <line x1="22" y1="2" x2="11" y2="13"/>
@@ -586,6 +591,7 @@
   bubble.addEventListener("click", () => {
     isOpen = !isOpen;
     win.classList.toggle("open", isOpen);
+    bubble.setAttribute("aria-expanded", String(isOpen));
     bubble.classList.add("rag-opened");
     if (isOpen && !welcomed) {
       addMessage(WELCOME_MSG, "bot");
@@ -597,6 +603,7 @@
   closeBtn.addEventListener("click", () => {
     isOpen = false;
     win.classList.remove("open");
+    bubble.setAttribute("aria-expanded", "false");
     closeLangDropdown();
   });
 

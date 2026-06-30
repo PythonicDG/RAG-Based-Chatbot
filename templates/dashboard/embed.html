@@ -142,16 +142,16 @@
         </div>
 
         <div class="code-card">
-            <div class="code-block" id="embed-code">
+            <div class="code-block">
                 <button class="copy-btn" onclick="copyCode()">Copy</button>
-                &lt;script
+                <pre id="embed-code">&lt;script
                 src="{{ server_url }}/static/widget.js"
                 data-server="{{ server_url }}"
                 data-bot-id="{{ bot.id }}"
                 data-bot-name="{{ bot.name }}"
                 data-color="{{ bot.primary_color }}"
                 data-welcome="{{ bot.welcome_message }}"&gt;
-                &lt;/script&gt;
+                &lt;/script&gt;</pre>
             </div>
 
             <div class="instructions">
@@ -174,7 +174,7 @@
 
     <script>
         function copyCode() {
-            const code = document.getElementById('embed-code').innerText.replace('Copy', '').trim();
+            const code = document.getElementById('embed-code').innerText.trim();
             navigator.clipboard.writeText(code).then(() => {
                 const btn = document.querySelector('.copy-btn');
                 btn.innerText = 'Copied!';

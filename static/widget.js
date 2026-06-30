@@ -403,6 +403,36 @@
       font-size: 10px;
       color: rgba(255,255,255,0.25);
     }
+
+    @media (max-width: 480px) {
+      #rag-widget-bubble {
+        right: 16px;
+        bottom: 16px;
+        width: 54px;
+        height: 54px;
+      }
+
+      #rag-widget-window {
+        right: 12px;
+        bottom: 82px;
+        width: calc(100vw - 24px);
+        height: min(70vh, 520px);
+        border-radius: 14px;
+      }
+
+      .rag-w-header {
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .rag-w-actions {
+        gap: 6px;
+      }
+
+      .rag-w-lang-dropdown {
+        right: -40px;
+      }
+    }
   `;
   document.head.appendChild(style);
 

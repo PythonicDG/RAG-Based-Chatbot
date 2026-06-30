@@ -1,0 +1,166 @@
+html {
+    color-scheme: dark;
+}
+
+body {
+    background:
+        radial-gradient(circle at top left, rgba(108, 99, 255, 0.14), transparent 34rem),
+        radial-gradient(circle at bottom right, rgba(74, 222, 128, 0.08), transparent 28rem),
+        #0a0a1a;
+}
+
+a,
+button,
+input,
+textarea {
+    -webkit-tap-highlight-color: transparent;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid #a8b3ff;
+    outline-offset: 3px;
+}
+
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.brand-mark {
+    display: inline-grid;
+    width: 28px;
+    height: 28px;
+    margin-right: 8px;
+    place-items: center;
+    border-radius: 8px;
+    background: rgba(108, 99, 255, 0.16);
+    color: #dbe3ff;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.btn-primary,
+.btn-submit,
+.btn-upload,
+.copy-btn,
+.btn-sm,
+.btn-open,
+.btn,
+.logout-btn {
+    min-height: 36px;
+}
+
+.muted-link {
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.muted-link:hover {
+    color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (max-width: 760px) {
+    .navbar {
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 18px;
+    }
+
+    .main {
+        margin: 28px auto;
+        padding: 0 18px;
+    }
+
+    .stats-grid,
+    .panel-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .header-section,
+    .section-header {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .header-actions,
+    .actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .btn-sm,
+    .actions .btn,
+    .actions .btn-primary,
+    .actions .btn-secondary {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .bots-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .bot-card {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .btn-open {
+        width: 100%;
+        text-align: center;
+    }
+
+    .auth-card,
+    .form-card,
+    .code-card,
+    .panel {
+        border-radius: 14px;
+        padding: 22px;
+    }
+}
+
+@media (max-width: 560px) {
+    body {
+        align-items: flex-start;
+    }
+
+    .navbar .nav-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .user-email,
+    .session-id,
+    code {
+        overflow-wrap: anywhere;
+    }
+
+    .tab-nav {
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+    .doc-item {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+    }
+}
